@@ -1,0 +1,98 @@
+#!/bin/bash
+
+# latestjoomla -- Download and unzip the latest Joomla version
+#
+# Written by René Kreijveld - email@renekreijveld.nl
+# This script is free software; you may redistribute it and/or modify it.
+# This script comes without any warranty. Use it at your own risk.
+#
+# Version history
+# 1.0 Initial version
+# 1.1 Added option to download a specific Joomla version
+
+VERSION=1.1
+
+MYNAME=$(basename "$0")
+
+# display usage information
+usage() {
+    echo -e "\n${MYNAME} ${VERSION}, written by René Kreijveld.\n"
+    echo -e "Usage: ${MYNAME} [-v <joomla version>] [-u] [-s] [-h]\n"
+    echo "-v download a specific Joomla version (3.10.0 and up)."
+    echo "-u download from a specific URL."
+    echo "-s silent, no messages will be shown."
+    echo -e "-h Help. Display this info.\n"
+    echo "If you do not specify a version, the latest version will be downloaded."
+    exit 0
+}
+
+JVERSION="latest"
+SILENT="no"
+USEURL="no"
+while getopts v:ush opt; do
+    case "${opt}" in
+    v)
+        JVERSION=$OPTARG
+        ;;
+    u)
+        USEURL="yes"
+        ;;
+    s)
+        SILENT="yes"
+        ;;
+    h)
+        usage
+        ;;
+    \?)
+        echo "Invalid option: -$OPTARG" >&2;
+        exit 1
+        ;;
+    esac
+done
+
+if [ ! "${JVERSION}" == "latest" ]; then
+    MAJOR_VERSION=$(echo ${JVERSION} | cut -d. -f1)
+    MINOR_VERSION=$(echo ${JVERSION} | cut -d. -f2)
+    PATCH_VERSION=$(echo ${JVERSION} | cut -d. -f3)
+    DOWNLOAD_URL="https://downloads.joomla.org/cms/joomla${MAJOR_VERSION}/${MAJOR_VERSION}-${MINOR_VERSION}-${PATCH_VERSION}/Joomla_${MAJOR_VERSION}-${MINOR_VERSION}-${PATCH_VERSION}-Stable-Full_Package.zip"
+else
+    DOWNLOAD_URL="https://www.joomla.org/latest"
+fi
+
+if [ "${USEURL}" == "yes" ]; then
+    read -p "Enter URL: " DOWNLOAD_URL
+else
+    if [ ! "${JVERSION}" == "latest" ]; then
+        if [ "${MAJOR_VERSION}" -lt 4 ] && [ "${MINOR_VERSION}" -lt 10 ]; then
+            echo "Only Joomla version 3.10.0 or higher can be downloaded."
+            exit 1
+        fi
+    fi
+fi
+
+# Download latest Joomla version and save as joomla_latest.zip
+if [ "${SILENT}" == "no" ]; then
+    curl -L "${DOWNLOAD_URL}" > joomla.zip
+else
+    curl -sL "${DOWNLOAD_URL}" > joomla.zip
+fi
+
+if [[ ! -f joomla.zip ]]; then
+    echo "Joomla version ${THISVERSION} could not be downloaded."
+    exit 1;
+fi
+
+# Unzip joomla.zip
+unzip -q -o joomla.zip
+
+# Cleanup joomla.zip
+rm joomla.zip
+
+# Set correct files and folders rights
+if [ "${SILENT}" == "no" ]; then
+    showmessage "Setting file rights to 644 (-rw-r--r--)"
+    find . -type f -exec chmod 644 {} +
+else
+    showmessage "Setting folder rights to 755 (-rwxr-xr-x)"
+    find . -type d -exec chmod 755 {} +
+fi
