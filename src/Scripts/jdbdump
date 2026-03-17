@@ -1,0 +1,117 @@
+#!/bin/bash
+
+# jdbdump -- Dump a Joomla database to SQL file.
+# Supports Joomla versions running on DDEV
+#
+# Written by René Kreijveld - email@renekreijveld.nl
+# This script is free software; you may redistribute it and/or modify it.
+# This script comes without any warranty. Use it at your own risk.
+#
+# Version history:
+# 1.0 Initial version
+
+VERSION=1.0
+
+MYPATH=$(cd "$(dirname "$0")"; pwd -P)
+MYNAME=$(basename "$0")
+
+SILENT="no"
+# Function to show messages (honoring silent mode)
+showmessage() {
+    if [[ "${SILENT}" == "no" ]]; then
+        echo -e "$1"
+    fi
+}
+
+# Display usage information
+usage() {
+    echo -e "${MYNAME} ${VERSION}, written by René Kreijveld.\n"
+    echo -e "Usage: ${MYNAME} [-t] [-n] [-o] [-s] [-h]\n"
+    echo "-t Add a date-time-stamp to the database dump filename."
+    echo "-n Do not compress the database dump with gzip."
+    echo "-o Overwrite existing database dump."
+    echo "-s Silent mode, no messages will be shown."
+    echo -e "-h Help. Display this info.\n"
+    exit 0
+}
+
+# Process the arguments
+COMPRESS="yes"
+SHOWDATE="no"
+OVERWRITE="no"
+while getopts "tnosh" opt; do
+    case "${opt}" in
+    t)
+        SHOWDATE="yes"
+        ;;
+    n)
+        COMPRESS="no"
+        ;;
+    o)
+        OVERWRITE="yes"
+        ;;
+    s)
+        SILENT="yes"
+        ;;
+    h)
+        usage
+        ;;
+    \?)
+        echo "Invalid option: -$OPTARG" >&2;
+        exit 1
+        ;;
+    esac
+done
+
+showmessage "${MYNAME} ${VERSION}"
+
+# Add a timestamp if requested
+if [[ "${SHOWDATE}" == "yes" ]]; then
+    NOW=$(date +".%Y%m%d-%H%M%S")
+else
+    NOW=""
+fi
+
+# Check for compression
+if [[ "${COMPRESS}" == "yes" ]]; then
+    EXTENSION=".gz"
+else
+    EXTENSION=""
+fi
+
+# Determine output filename
+if [[ -n "${DUMPFILE}" ]]; then
+    OUTFILE="${DUMPFILE}"
+else
+    OUTFILE="db${NOW}.sql${EXTENSION}"
+fi
+
+# Check if database dump exists
+if [[ -e "${OUTFILE}" ]]; then
+    if [[ "${OVERWRITE}" == "no" ]]; then
+        read -r -p "Database dump ${OUTFILE} already exists. Do you want to continue? [Y/n] " CONFIRM
+        if [[ ! "${CONFIRM}" =~ ^[Yy]?$ ]]; then
+            echo "Aborted."
+            exit 0
+        fi
+    else
+        showmessage "Overwriting existing dump file..."
+    fi
+    rm -f "${OUTFILE}" 2>/dev/null
+fi
+
+showmessage "Starting database dump."
+
+# Check for compression
+if [[ "${COMPRESS}" == "yes" ]]; then
+    ddev export-db --file="${OUTFILE}" >/dev/null 2>&1
+else
+    ddev export-db --gzip=false --file="${OUTFILE}" >/dev/null 2>&1
+fi
+
+if [[ $? -ne 0 ]]; then
+    echo "Error: database dump failed." >&2
+    exit 1
+fi
+
+showmessage "Database dump is ready in ${OUTFILE}."

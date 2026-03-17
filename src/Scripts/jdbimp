@@ -1,0 +1,90 @@
+#!/bin/bash
+
+# jdbimp -- Import a Joomla database dump
+# Supports Joomla versions running on DDEV
+#
+# Written by René Kreijveld - email@renekreijveld.nl
+# This script is free software; you may redistribute it and/or modify it.
+# This script comes without any warranty. Use it at your own risk.
+#
+# Version history
+# 1.0 Initial version
+# 1.1 Added auto-detection of db.sql and db.sql.gz
+# 1.2 Added exit code check for ddev import-db
+
+# version
+VERSION=1.2
+
+# general variables
+MYNAME=$(basename "$0")
+
+# show message function
+showmessage() {
+    if [[ "${SILENT}" == "no" ]]; then
+        echo -e "$1"
+    fi
+}
+
+# Display usage information
+usage() {
+    echo -e "${MYNAME} ${VERSION}, written by René Kreijveld.\n"
+    echo -e "Usage: ${MYNAME} [-f dumpfile] [-s] [-h]\n"
+    echo "-f dumpfile, use the specified file instead of db.sql or db.sql.gz (optional)."
+    echo "-s silent, no messages will be shown (optional)."
+    echo -e "-h Help. Display this info.\n"
+    exit 0
+}
+
+# Process the arguments
+SILENT="no"
+DUMPFILE=""
+while getopts "f:sh" opt; do
+    case "${opt}" in
+    f)
+        DUMPFILE="${OPTARG}"
+        ;;
+    s)
+        SILENT="yes"
+        ;;
+    h)
+        usage
+        ;;
+    \?)
+        echo "Invalid option: -$OPTARG" >&2;
+        exit 1
+        ;;
+    esac
+done
+
+# If no custom dump file specified, auto-detect default dump file
+if [[ -z "${DUMPFILE}" ]]; then
+    IMPORTFILE="db.sql"
+    IMPORTFILECOMPRESSED="db.sql.gz"
+    if [[ -e "${IMPORTFILE}" && -e "${IMPORTFILECOMPRESSED}" ]]; then
+        echo "Error: Both ${IMPORTFILE} and ${IMPORTFILECOMPRESSED} exist. Please specify which file to import with -f."
+        exit 1
+    elif [[ -e "${IMPORTFILE}" ]]; then
+        DUMPFILE="${IMPORTFILE}"
+    elif [[ -e "${IMPORTFILECOMPRESSED}" ]]; then
+        DUMPFILE="${IMPORTFILECOMPRESSED}"
+    else
+        echo "Error: No database dump file found (db.sql or db.sql.gz)."
+        exit 1
+    fi
+fi
+
+showmessage "${MYNAME} ${VERSION}"
+
+# Check if database dump exists
+if [[ ! -e "${DUMPFILE}" ]]; then
+    echo "Error: Database dump file not found: ${DUMPFILE}"
+    exit 1
+fi
+
+showmessage "Starting database import of file ${DUMPFILE}."
+if ddev import-db --file="${DUMPFILE}" >/dev/null 2>&1; then
+    showmessage "Database import of ${DUMPFILE} completed successfully."
+else
+    echo "Error: Database import failed."
+    exit 1
+fi
