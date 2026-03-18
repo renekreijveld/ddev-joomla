@@ -15,7 +15,7 @@ VERSION=1.0
 # Folder where scripts are installed
 SCRIPTS_DEST="/usr/local/bin"
 CONFIG_DIR="${HOME}/.config/ddevjoomla"
-UPDATE_LOG="${CONFIG_DIR}/ddev-joomla-update.log"
+LOGFILE="${CONFIG_DIR}/ddev-joomla-update.log"
 CONFIG_FILE="${CONFIG_DIR}/config"
 
 # Local scripts to install
@@ -99,16 +99,16 @@ check_prerequisites() {
     fi
 
     # Initialize update log
-    touch "${UPDATE_LOG}" 2>/dev/null || {
-        echo "Warning: could not create update log at ${UPDATE_LOG}, continuing without logging."
-        UPDATE_LOG=""
+    touch "${LOGFILE}" 2>/dev/null || {
+        echo "Warning: could not create update log at ${LOGFILE}, continuing without logging."
+        LOGFILE=""
     }
 }
 
 # Log update activity
-log_update() {
-    if [[ -n "${UPDATE_LOG}" ]]; then
-        echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "${UPDATE_LOG}"
+log_message() {
+    if [[ -n "${LOGFILE}" ]]; then
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "${LOGFILE}"
     fi
 }
 
@@ -128,7 +128,7 @@ update_local_scripts() {
         if ! curl -fsSL "${GITHUB_BASE}/src/Scripts/${script}" -o "${TMPDIR}/${script}"; then
             echo "FAILED (download error)"
             FAILED_SCRIPTS+=("${script}")
-            log_update "FAILED to update ${script}: download error"
+            log_message "FAILED to update ${script}: download error"
             continue
         fi
 
@@ -138,7 +138,7 @@ update_local_scripts() {
             if ! echo "${PASSWORD}" | sudo -S mv -f "${SCRIPTS_DEST}/${script}" "${BACKUP_FILE}" 2>/dev/null; then
                 echo "FAILED (backup error)"
                 FAILED_SCRIPTS+=("${script}")
-                log_update "FAILED to update ${script}: backup error"
+                log_message "FAILED to update ${script}: backup error"
                 continue
             fi
         fi
@@ -147,7 +147,7 @@ update_local_scripts() {
         if ! echo "${PASSWORD}" | sudo -S mv -f "${TMPDIR}/${script}" "${SCRIPTS_DEST}/${script}" 2>/dev/null; then
             echo "FAILED (move error)"
             FAILED_SCRIPTS+=("${script}")
-            log_update "FAILED to update ${script}: move error"
+            log_message "FAILED to update ${script}: move error"
             continue
         fi
 
@@ -155,13 +155,13 @@ update_local_scripts() {
         if ! echo "${PASSWORD}" | sudo -S chmod +x "${SCRIPTS_DEST}/${script}" 2>/dev/null; then
             echo "FAILED (chmod error)"
             FAILED_SCRIPTS+=("${script}")
-            log_update "FAILED to update ${script}: chmod error"
+            log_message "FAILED to update ${script}: chmod error"
             continue
         fi
 
         echo "OK"
         UPDATED_SCRIPTS+=("${script}")
-        log_update "Successfully updated ${script}"
+        log_message "Successfully updated ${script}"
     done
 }
 
@@ -182,7 +182,7 @@ the_end() {
         for script in "${FAILED_SCRIPTS[@]}"; do
             echo "  ✗ ${script}"
         done
-        echo -e "\nPlease check the update log for details: ${UPDATE_LOG}\n"
+        echo -e "\nPlease check the update log for details: ${LOGFILE}\n"
         exit 1
     fi
 
@@ -196,8 +196,8 @@ the_end() {
     echo "Backup files have timestamps appended to their names."
     echo -e "\nEnjoy your updated development setup!"
 
-    if [[ -n "${UPDATE_LOG}" ]]; then
-        echo -e "\nUpdate log: ${UPDATE_LOG}\n"
+    if [[ -n "${LOGFILE}" ]]; then
+        echo -e "\nUpdate log: ${LOGFILE}\n"
     fi
 }
 
