@@ -133,20 +133,38 @@ fi
 
 # Create DDEV config
 showmessage "Creating DDEV config"
-ddev config --project-type=joomla --php-version="${PHP_VERSION}" --upload-dirs=images
+ddev config --project-type=php --php-version="${PHP_VERSION}" --upload-dirs=images
 
 # Add joomla.ini
-echo "display_errors = off" > .ddev/php/joomla.ini
-echo "output_buffering = off" >> .ddev/php/joomla.ini
-
-if [ "${JOOMLA}" == "yes" ]; then
-    showmessage "Adding Adminer to the project"
-    ddev add-on get ddev/ddev-adminer
-fi
+echo "display_errors = off" > ${SITE_FOLDER}/.ddev/php/joomla.ini
+echo "output_buffering = off" >> ${SITE_FOLDER}/.ddev/php/joomla.ini
 
 # Start DDEV
 showmessage "Starting DDEV project"
 ddev start
+
+# Modify the nginx-site.conf
+NGINXCONF=${SITE_FOLDER}/.ddev/nginx_full/nginx-site.conf
+
+# Remove the #ddev-generated line so DDEV does not overwrite our customisations
+sed -i '' '/^#ddev-generated/d' "${NGINXCONF}"
+
+# Add Joomla API support before the @rewrite location block
+awk '/location @rewrite \{/{
+    print "    # Support for Joomla API"
+    print "    location /api/ {"
+    print "        try_files $uri $uri/ /api/index.php?$args;"
+    print "    }"
+    print ""
+}
+{print}' "${NGINXCONF}" > "${NGINXCONF}.tmp" && mv "${NGINXCONF}.tmp" "${NGINXCONF}"
+
+showmessage "Restarting DDEV project"
+ddev restart
+
+# Add Adminer to the project
+showmessage "Adding Adminer to the project"
+ddev add-on get ddev/ddev-adminer
 
 # Run Joomla installer if needed
 if [ "${JOOMLA}" == "yes" ]; then
