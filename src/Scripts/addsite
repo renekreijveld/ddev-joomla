@@ -14,10 +14,12 @@
 # version
 VERSION=1.0
 # name of this
-MYNAME=$(basename ${0})
+MYNAME=$(basename "${0}")
 
 # root folder for websites
 SITEROOT=${HOME}/Development/Ddev
+CONFIG_DIR="${HOME}/.config/ddevjoomla"
+CONFIG_FILE="${CONFIG_DIR}/config"
 
 # show message function
 showmessage() {
@@ -26,12 +28,24 @@ showmessage() {
     fi
 }
 
+# Load configuration file defaults
+if [[ -f "${CONFIG_FILE}" ]]; then
+    source "${CONFIG_FILE}"
+else
+    echo "Error: configuration file ${CONFIG_FILE} not found, exiting."
+    exit 1
+fi
+
+# Set default webserver from config if not already set
+DEFAULT_WEBSERVER="${WEBSERVER:-nginx}"
+
 # display usage information
 usage() {
     echo -e "${MYNAME} ${VERSION}, written by René Kreijveld.\n"
-    echo -e "Usage: ${MYNAME} -n <sitename> [-p <php_version>] [-j] [-s] [-h]\n"
+    echo -e "Usage: ${MYNAME} -n <sitename> [-p <php_version>] [-w <webserver>] [-j] [-s] [-h]\n"
     echo "-n the website name for the new website (without spaces)."
     echo "-p the PHP version for the new website (optional, default: 8.4)."
+    echo "-w the webserver to use, nginx or apache (optional, default: ${DEFAULT_WEBSERVER})."
     echo "-j download and install Joomla (optional)."
     echo "-s silent, no messages will be shown (optional)."
     echo -e "-h display this help (optional).\n"
@@ -51,13 +65,17 @@ contains_spaces() {
 SILENT="no"
 JOOMLA="no"
 PHP_VERSION="8.4"
-while getopts "n:p:ijsh" opt; do
+WEBSERVER_OPTION=""
+while getopts "n:p:w:ijsh" opt; do
     case ${opt} in
     n)
         WEBSITE_NAME=$OPTARG
         ;;
     p)
         PHP_VERSION=$OPTARG
+        ;;
+    w)
+        WEBSERVER_OPTION=$OPTARG
         ;;
     i)
         IGNOREFOLDER="yes"
@@ -84,6 +102,19 @@ done
 
 showmessage "${MYNAME} ${VERSION}"
 
+# Use command-line webserver if provided, otherwise use config default
+if [ -n "${WEBSERVER_OPTION}" ]; then
+    WEBSERVER="${WEBSERVER_OPTION}"
+fi
+
+# Validate webserver option
+if [[ -z "${WEBSERVER}" || ( "${WEBSERVER}" != "nginx" && "${WEBSERVER}" != "apache" ) ]]; then
+    echo "Error: invalid or missing webserver '${WEBSERVER}'."
+    echo "Valid options are: nginx or apache"
+    echo "Use ${MYNAME} -h to display help."
+    exit 1
+fi
+
 # check if mandatory parameters are provided
 if [ -z "${WEBSITE_NAME}" ]; then
     echo "Error: website name missing."
@@ -105,7 +136,7 @@ showmessage "Add new website ${WEBSITE_NAME} to DDEV."
 SITE_FOLDER=${SITEROOT}/${WEBSITE_NAME}
 
 # Ask for confirmation before proceeding
-echo -e "Ready to set up website '${WEBSITE_NAME}' with PHP ${PHP_VERSION} in ${SITE_FOLDER}."
+echo -e "Ready to set up website '${WEBSITE_NAME}' with PHP ${PHP_VERSION} using ${WEBSERVER} in ${SITE_FOLDER}."
 read -r -p "Do you want to continue? [Y/n] " CONFIRM
 if [[ ! "${CONFIRM}" =~ ^[Yy]?$ ]]; then
     echo "Aborted."
@@ -133,31 +164,35 @@ fi
 
 # Create DDEV config
 showmessage "Creating DDEV config"
-ddev config --project-type=php --php-version="${PHP_VERSION}" --upload-dirs=images
+ddev config --project-type=php --webserver-type=${WEBSERVER}-fpm --php-version="${PHP_VERSION}" --upload-dirs=images
 
 # Add joomla.ini
-echo "display_errors = off" > ${SITE_FOLDER}/.ddev/php/joomla.ini
-echo "output_buffering = off" >> ${SITE_FOLDER}/.ddev/php/joomla.ini
+echo "display_errors = off" > "${SITE_FOLDER}/.ddev/php/joomla.ini"
+echo "output_buffering = off" >> "${SITE_FOLDER}/.ddev/php/joomla.ini"
 
 # Start DDEV
 showmessage "Starting DDEV project"
 ddev start
 
-# Modify the nginx-site.conf
-NGINXCONF=${SITE_FOLDER}/.ddev/nginx_full/nginx-site.conf
+# Configure based on selected webserver
+if [[ "${WEBSERVER}" == "nginx" ]]; then
+    # Modify the nginx-site.conf
+    NGINXCONF="${SITE_FOLDER}/.ddev/nginx_full/nginx-site.conf"
 
-# Remove the #ddev-generated line so DDEV does not overwrite our customisations
-sed -i '' '/^#ddev-generated/d' "${NGINXCONF}"
+    # Remove the #ddev-generated line so DDEV does not overwrite our customisations
+    sed -i.bak '/^#ddev-generated/d' "${NGINXCONF}"
+    rm -f "${NGINXCONF}.bak"
 
-# Add Joomla API support before the @rewrite location block
-awk '/location @rewrite \{/{
-    print "    # Support for Joomla API"
-    print "    location /api/ {"
-    print "        try_files $uri $uri/ /api/index.php?$args;"
-    print "    }"
-    print ""
-}
-{print}' "${NGINXCONF}" > "${NGINXCONF}.tmp" && mv "${NGINXCONF}.tmp" "${NGINXCONF}"
+    # Add Joomla API support before the @rewrite location block
+    awk '/location @rewrite \{/{
+        print "    # Support for Joomla API"
+        print "    location /api/ {"
+        print "        try_files $uri $uri/ /api/index.php?$args;"
+        print "    }"
+        print ""
+    }
+    {print}' "${NGINXCONF}" > "${NGINXCONF}.tmp" && mv "${NGINXCONF}.tmp" "${NGINXCONF}"
+fi
 
 showmessage "Restarting DDEV project"
 ddev restart
@@ -175,6 +210,16 @@ if [ "${JOOMLA}" == "yes" ]; then
     ddev php cli/joomla.php config:set sef_rewrite=true
     showmessage "Joomla config set session lifetime to 120 minutes"
     ddev php cli/joomla.php config:set lifetime=120
+
+    # When webserver is apache, create a .htaccess
+    if [[ "${WEBSERVER}" == "apache" ]]; then
+        showmessage "Your webserver is apache, checking for presence of .htaccess."
+        if [[ -f "${SITE_FOLDER}/.htaccess" ]]; then
+            showmessage "A .htaccess file was already found, no change needed."
+        else
+            cp "${SITE_FOLDER}/htaccess.txt" "${SITE_FOLDER}/.htaccess"
+        fi
+    fi
 
     echo -e "Your Joomla website is ready.\n"
     echo -e "The website URL is https://${WEBSITE_NAME}.ddev.site"
