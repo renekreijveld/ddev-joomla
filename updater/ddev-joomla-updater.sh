@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# ddev-joomla-updatger - Update bash scripts to support Joomla running on DDEV
+# ddev-joomla-updater - Update bash scripts to support Joomla running on DDEV
 #
 # Written by René Kreijveld - email@renekreijveld.nl
 # This script is free software; you may redistribute it and/or modify it.
@@ -8,13 +8,14 @@
 #
 # Version history
 # 1.0 Initial version.
+# 1.1 Code improvements and bug fixes
 
 VERSION=1.0
 
 # Folder where scripts are installed
 SCRIPTS_DEST="/usr/local/bin"
 CONFIG_DIR="${HOME}/.config/ddevjoomla"
-INSTALL_LOG="${CONFIG_DIR}/ddev-joomla-install.log"
+UPDATE_LOG="${CONFIG_DIR}/ddev-joomla-update.log"
 CONFIG_FILE="${CONFIG_DIR}/config"
 
 # Local scripts to install
@@ -25,6 +26,15 @@ GITHUB_BASE="https://raw.githubusercontent.com/renekreijveld/ddev-joomla/refs/he
 
 # Create a temporary directory for downloads
 TMPDIR=$(mktemp -d)
+if [[ -z "${TMPDIR}" ]]; then
+    echo "Error: failed to create temporary directory, exiting."
+    exit 1
+fi
+
+# Track update results
+UPDATED_SCRIPTS=()
+FAILED_SCRIPTS=()
+PASSWORD=""
 
 cleanup() {
     rm -rf "${TMPDIR}"
@@ -52,11 +62,18 @@ prompt_for_input() {
 }
 
 start() {
-    echo -e "Welcome to the DDEV support scripts for Joomla updater ${THISVERSION}.\n"
-    echo -e "This updater and the software it installs come without any warranty. Use it at your own risk.\nAlways backup your data and software before running the installer and use the software it installs.\n"
+    echo -e "Welcome to the DDEV support scripts for Joomla updater ${VERSION}.\n"
+    echo -e "This updater and the software it installs come without any warranty. Use it at your own risk."
+    echo -e "Always backup your data and software before running the updater and use the software it updates.\n"
     read -s -p "Input your password, this is needed for updating system files: " PASSWORD
+    echo ""
 
     # Validate the password
+    if [[ -z "${PASSWORD}" ]]; then
+        echo "Error: password cannot be empty, exiting."
+        exit 1
+    fi
+
     if ! echo "${PASSWORD}" | sudo -S -v 2>/dev/null; then
         echo "Error: incorrect password, exiting."
         exit 1
@@ -73,32 +90,133 @@ load_configfile() {
     fi
 }
 
-update_local_scripts() {
-    echo -e "\n\nUpdate local scripts:"
+# Check prerequisites before updating
+check_prerequisites() {
+    # Check if SCRIPTS_DEST directory exists and is writable
+    if [[ ! -d "${SCRIPTS_DEST}" ]]; then
+        echo "Error: scripts destination directory ${SCRIPTS_DEST} does not exist, exiting."
+        exit 1
+    fi
+
+    if [[ ! -w "${SCRIPTS_DEST}" ]]; then
+        echo "Error: scripts destination directory ${SCRIPTS_DEST} is not writable, exiting."
+        exit 1
+    fi
+
+    # Initialize update log
+    touch "${UPDATE_LOG}" 2>/dev/null || {
+        echo "Warning: could not create update log at ${UPDATE_LOG}, continuing without logging."
+        UPDATE_LOG=""
+    }
+
+    echo "Prerequisites check passed."
+}
+
+# Log update activity
+log_update() {
+    if [[ -n "${UPDATE_LOG}" ]]; then
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "${UPDATE_LOG}"
+    fi
+}
+
+show_scripts_to_update() {
+    echo -e "\nScripts that will be updated:"
     for script in "${LOCAL_SCRIPTS[@]}"; do
-        echo "- update ${script}."
+        echo "  - ${script}"
+    done
+}
+
+update_local_scripts() {
+    echo -e "\n\nUpdating local scripts:"
+    for script in "${LOCAL_SCRIPTS[@]}"; do
+        echo -n "- updating ${script}... "
+
+        # Download script from GitHub
         if ! curl -fsSL "${GITHUB_BASE}/src/Scripts/${script}" -o "${TMPDIR}/${script}"; then
-            echo "  Warning: failed to download ${script}, skipping."
+            echo "FAILED (download error)"
+            FAILED_SCRIPTS+=("${script}")
+            log_update "FAILED to update ${script}: download error"
             continue
         fi
 
         # If a script already exists, backup it first
-        if [ -f "${SCRIPTS_DEST}/${script}" ]; then
-            echo "${PASSWORD}" | sudo -S mv -f "${SCRIPTS_DEST}/${script}" "${SCRIPTS_DEST}/${script}.$(date +%Y%m%d-%H%M%S)"
+        if [[ -f "${SCRIPTS_DEST}/${script}" ]]; then
+            BACKUP_FILE="${SCRIPTS_DEST}/${script}.$(date +%Y%m%d-%H%M%S)"
+            if ! echo "${PASSWORD}" | sudo -S mv -f "${SCRIPTS_DEST}/${script}" "${BACKUP_FILE}" 2>/dev/null; then
+                echo "FAILED (backup error)"
+                FAILED_SCRIPTS+=("${script}")
+                log_update "FAILED to update ${script}: backup error"
+                continue
+            fi
         fi
 
-        echo "${PASSWORD}" | sudo -S mv -f "${TMPDIR}/${script}" "${SCRIPTS_DEST}/${script}" > /dev/null
-        echo "${PASSWORD}" | sudo -S chmod +x "${SCRIPTS_DEST}/${script}"
+        # Move new script to destination
+        if ! echo "${PASSWORD}" | sudo -S mv -f "${TMPDIR}/${script}" "${SCRIPTS_DEST}/${script}" 2>/dev/null; then
+            echo "FAILED (move error)"
+            FAILED_SCRIPTS+=("${script}")
+            log_update "FAILED to update ${script}: move error"
+            continue
+        fi
+
+        # Make script executable
+        if ! echo "${PASSWORD}" | sudo -S chmod +x "${SCRIPTS_DEST}/${script}" 2>/dev/null; then
+            echo "FAILED (chmod error)"
+            FAILED_SCRIPTS+=("${script}")
+            log_update "FAILED to update ${script}: chmod error"
+            continue
+        fi
+
+        echo "OK"
+        UPDATED_SCRIPTS+=("${script}")
+        log_update "Successfully updated ${script}"
     done
-    echo "For each installed script a backup was made. Check the folder ${SCRIPTS_DEST}."
 }
 
 the_end() {
-    echo -e "\nUpdate completed, enjoy your development setup!"
+    echo -e "\n################"
+    echo "Update Summary:"
+    echo "################"
+
+    if [[ ${#UPDATED_SCRIPTS[@]} -gt 0 ]]; then
+        echo -e "\nSuccessfully updated (${#UPDATED_SCRIPTS[@]}):"
+        for script in "${UPDATED_SCRIPTS[@]}"; do
+            echo "  ✓ ${script}"
+        done
+    fi
+
+    if [[ ${#FAILED_SCRIPTS[@]} -gt 0 ]]; then
+        echo -e "\nFailed to update (${#FAILED_SCRIPTS[@]}):"
+        for script in "${FAILED_SCRIPTS[@]}"; do
+            echo "  ✗ ${script}"
+        done
+        echo -e "\nPlease check the update log for details: ${UPDATE_LOG}\n"
+        exit 1
+    fi
+
+    if [[ ${#UPDATED_SCRIPTS[@]} -eq 0 ]]; then
+        echo -e "\nNo scripts were updated.\n"
+        exit 1
+    fi
+
+    echo -e "\nUpdate completed successfully!"
+    echo "All updated scripts have been backed up in ${SCRIPTS_DEST}/"
+    echo "Backup files have timestamps appended to their names."
+    echo -e "\nEnjoy your updated development setup!"
+
+    if [[ -n "${UPDATE_LOG}" ]]; then
+        echo -e "\nUpdate log: ${UPDATE_LOG}\n"
+    fi
 }
 
 # Execute the script in order
 start
 load_configfile
+check_prerequisites
+show_scripts_to_update
+read -r -p "Do you want to continue? [Y/n] " CONFIRM
+if [[ ! "${CONFIRM}" =~ ^[Yy]?$ ]]; then
+    echo "Update cancelled."
+    exit 0
+fi
 update_local_scripts
 the_end

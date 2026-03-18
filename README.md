@@ -24,7 +24,7 @@ The installer script automatically creates backups of all configuration files an
 
 Follow these <a href="../../blob/main/Install.md">installation instructions</a> to get everything up and running.
 
-Regular updates are provided in this repository. Use the <a href="../../blob/main/update.md">update instructions</a> to keep your setup up to date.
+Regular updates are provided in this repository. Use the <a href="../../blob/main/Update.md">update instructions</a> to keep your setup up to date.
 
 ### Support the Project
 
