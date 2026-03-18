@@ -14,7 +14,7 @@ This set of scripts were written to better support Joomla local development in D
 
 ### Backup & Safety
 
-If you already have a Homebrew-based PHP development setup, don't worry! The installer script automatically creates backups of all configuration files before making any changes.
+The installer script automatically creates backups of all configuration files and existing scripts before making any changes.
 
 ### Installation & Updates
 
