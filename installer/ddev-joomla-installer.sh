@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# ddev-joomla-installler - Install bash script to support Joomla running on DDEV
+# ddev-joomla-installer.sh - Install bash scripts to support Joomla running on DDEV
 #
 # Written by René Kreijveld - email@renekreijveld.nl
 # This script is free software; you may redistribute it and/or modify it.
