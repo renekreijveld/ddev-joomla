@@ -98,18 +98,11 @@ check_prerequisites() {
         exit 1
     fi
 
-    if [[ ! -w "${SCRIPTS_DEST}" ]]; then
-        echo "Error: scripts destination directory ${SCRIPTS_DEST} is not writable, exiting."
-        exit 1
-    fi
-
     # Initialize update log
     touch "${UPDATE_LOG}" 2>/dev/null || {
         echo "Warning: could not create update log at ${UPDATE_LOG}, continuing without logging."
         UPDATE_LOG=""
     }
-
-    echo "Prerequisites check passed."
 }
 
 # Log update activity
@@ -122,7 +115,7 @@ log_update() {
 show_scripts_to_update() {
     echo -e "\nScripts that will be updated:"
     for script in "${LOCAL_SCRIPTS[@]}"; do
-        echo "  - ${script}"
+        echo "- ${script}"
     done
 }
 
