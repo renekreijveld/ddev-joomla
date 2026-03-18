@@ -15,6 +15,7 @@
 # version
 VERSION=1.2
 
+
 # general variables
 MYNAME=$(basename "$0")
 
