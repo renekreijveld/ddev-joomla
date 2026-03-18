@@ -15,7 +15,7 @@ VERSION=1.0
 HOMEBREW_PATH=$(brew --prefix)
 SCRIPTS_DEST="/usr/local/bin"
 CONFIG_DIR="${HOME}/.config/ddevjoomla"
-INSTALL_LOG="${CONFIG_DIR}/ddev-joomla-install.log"
+LOGFILE="${CONFIG_DIR}/ddev-joomla-install.log"
 CONFIG_FILE="${CONFIG_DIR}/config"
 
 # Local scripts to install
@@ -50,28 +50,36 @@ prompt_for_input() {
     echo "$new_value"
 }
 
+# Write a message to a logfile
+log_message() {
+    if [[ -n "${LOGFILE}" ]]; then
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "${LOGFILE}"
+    fi
+}
+
 start() {
     clear
     echo -e "Welcome to the DDEV support scripts for Joomla installer ${THISVERSION}.\n"
     echo -e "\t#########################################################"
     echo -e "\t## PLEASE READ EVERYTHING CAREFULLY BEFORE CONTINUING! ##"
     echo -e "\t#########################################################\n"
-    echo "Installation output will be logged in the file ${INSTALL_LOG}."
+    echo "Installation output will be logged in the file ${LOGFILE}."
     echo -e "Check this file if you encounter any issues during installation.\n"
     echo -e "This installer and the software it installs come without any warranty. Use it at your own risk.\nAlways backup your data and software before running the installer and use the software it installs.\n"
     read -p "Press Enter to start the installation, press Ctrl-C to abort. "
-    touch "${INSTALL_LOG}"
+    touch "${LOGFILE}"
 }
 
 # Function to check if a script is already installed
 is_installed() {
-    [ -f /usr/local/bin/$1 ]
+    [ -f ${SCRIPTS_DEST}/$1 ]
 }
 
 prechecks() {
+    log_message "Running prechecks"
     clear
     echo "The installer will first check if the scripts are already installed."
-    
+
     INSTALLED_SCRIPTS=()
     for script in "${LOCAL_SCRIPTS[@]}"; do
         if is_installed "${script}"; then
@@ -80,30 +88,37 @@ prechecks() {
     done
 
     if [ ${#INSTALLED_SCRIPTS[@]} -gt 0 ]; then
-        echo -e "\nThe following scripts are already installed in /usr/local/bin:\n"
+        echo -e "\nThe following scripts are already installed in ${SCRIPTS_DEST}:\n"
+        log_message "The following scripts are allready installed at ${SCRIPTS_DEST}:"
         for script in "${INSTALLED_SCRIPTS[@]}"; do
-            echo "  - ${formula}"
+            echo "- ${formula}"
+            log_message "- ${formula}"
         done
         echo -e "\nThis installer does not update these scripts but will make a backup of the original script.\n"
         read -p "Press Enter to start the installation, or press Ctrl-C to abort. "
     else
         echo "None of the scripts were already installed. Proceeding."
+        log_message "No previous installed scripts found"
     fi
 }
 
 ask_defaults() {
+    log_message "Running ask_defaults"
     clear
     # Check if config file already exists and if so, backup it
     if [[ -f "${CONFIG_FILE}" ]]; then
         # Backup existing config file
         echo "The config file ${CONFIG_FILE} already exists, a backup will be created."
+        log_message "The config file ${CONFIG_FILE} already exists"
         BACKUPFILE="${CONFIG_FILE}.$(date +%Y%m%d-%H%M%S)"
         cp "${CONFIG_FILE}" "${BACKUPFILE}"
         echo "Existing config file backupped to ${BACKUPFILE}."
+        log_message "Existing config file backupped to ${BACKUPFILE}"
     fi
 
     # Create config directory if it doesn't exist
     mkdir -p "${CONFIG_DIR}"
+    log_message "${CONFIG_DIR} created"
     echo -e "\nBefore the installation starts, some default values need to be set."
     echo "These values will be used during installation and will be saved in a config file."
     echo "There are various scripts the depend on this config file. These scripts will not work without it."
@@ -118,6 +133,7 @@ ask_defaults() {
     # Validate the password
     if ! echo "${PASSWORD}" | sudo -S -v 2>/dev/null; then
         echo "Error: incorrect password, exiting."
+        log_message "User entered incorrect password, exiting"
         exit 1
     fi
 
@@ -128,23 +144,30 @@ ask_defaults() {
     echo "ROOTFOLDER=${rootfolder}" >> "${CONFIG_FILE}"
     echo "WEBSERVER=${webserver}" >> "${CONFIG_FILE}"
     echo "INSTALLER_VERSION=${VERSION}" >> "${CONFIG_FILE}"
+    log_message "Generated config file ${CONFIG_FILE}"
 }
 
 check_scripts_dest() {
+    log_message "Running check_scripts_dest"
     clear
+
     echo "Check for existance of ${SCRIPTS_DEST}."
     # Create SCRIPTS_DEST directory if it doesn't exist
     if [ ! -d "${SCRIPTS_DEST}" ]; then
         echo "${SCRIPTS_DEST} directory does not yet exist, let's create it."
         echo "${PASSWORD}" | sudo -S mkdir -p "${SCRIPTS_DEST}" > /dev/null
+        log_message "${SCRIPTS_DEST} directory did not exist, created"
     else
         echo "${SCRIPTS_DEST} directory already exists."
+        log_message "${SCRIPTS_DEST} already exists"
     fi
     # Check if SCRIPTS_DEST directory is in the shell PATH
     if [[ ":$PATH:" != *":${SCRIPTS_DEST}:"* ]]; then
         echo "${SCRIPTS_DEST} is not in your shell PATH. Make sure to add that, before you start using the scripts."
+        log_message "${SCRIPTS_DEST} not found im shell PATH"
     else
         echo "${SCRIPTS_DEST} is already in PATH. You're good to go :-)"
+        log_message "${SCRIPTS_DEST} is present in shell PATH"
     fi
 }
 
@@ -159,13 +182,19 @@ test_script_path() {
 
 create_local_folders() {
     mkdir -p "${ROOTFOLDER}"
+    log_message "${ROOTFOLDER} created"
+
 }
 
 install_local_scripts() {
+    log_message "Running install_local_scripts"
+
     echo -e "\nInstall local scripts:"
     echo -e "If a script already exists, a backup copy will be made."
     for script in "${LOCAL_SCRIPTS[@]}"; do
         echo "- install ${script}."
+        log_message "Install ${script}"
+
         curl -fsSL "${GITHUB_BASE}/src/Scripts/${script}" | tee "script.${script}" > /dev/null
 
         if [ -f "${SCRIPTS_DEST}/${script}" ]; then
@@ -179,6 +208,7 @@ install_local_scripts() {
 }
 
 report_existing_paths() {
+    log_message "Running report_existing_paths"
     if [ ${#EXISTING_PATHS[@]} -gt 0 ]; then
         echo -e "\n################"
         echo -e "## ATTENTION! ##"
@@ -186,6 +216,7 @@ report_existing_paths() {
         echo -e "The following scripts are already installed in a different location than ${SCRIPTS_DEST}:\n"
         for path in "${EXISTING_PATHS[@]}"; do
             echo "- ${path}"
+            log_message "Script already exists: ${path}"
         done
         echo -e "\nAll new scripts are installed in ${SCRIPTS_DEST}."
         echo "The scripts in the list above are still available in the old locations and these might come first in the PATH variable."
@@ -196,12 +227,14 @@ report_existing_paths() {
 
 the_end() {
     echo -e "\nInstallation completed!\n"
-    echo -e "The installation log is available at ${INSTALL_LOG}.\n"
+    log_message "Installation completed"
+    echo -e "The installation log is available at ${LOGFILE}.\n"
     echo "Enjoy DDEV with enhanced Joomla support!"
     echo -e "\nIf you like this tool, please consider a donation to support further development: https://renekreijveld.nl/donate."
 }
 
 # Execute the script in order
+log_message "Start ddev-joomla-installer ====================================="
 start
 prechecks
 ask_defaults

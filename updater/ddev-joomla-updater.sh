@@ -105,7 +105,7 @@ check_prerequisites() {
     }
 }
 
-# Log update activity
+# Write a message to a logfile
 log_message() {
     if [[ -n "${LOGFILE}" ]]; then
         echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "${LOGFILE}"
@@ -172,15 +172,18 @@ the_end() {
 
     if [[ ${#UPDATED_SCRIPTS[@]} -gt 0 ]]; then
         echo -e "\nSuccessfully updated (${#UPDATED_SCRIPTS[@]}):"
+
         for script in "${UPDATED_SCRIPTS[@]}"; do
-            echo "  ✓ ${script}"
+            echo "✓ ${script}"
+            log_message "Successfully updated ${script}"
         done
     fi
 
     if [[ ${#FAILED_SCRIPTS[@]} -gt 0 ]]; then
         echo -e "\nFailed to update (${#FAILED_SCRIPTS[@]}):"
         for script in "${FAILED_SCRIPTS[@]}"; do
-            echo "  ✗ ${script}"
+            echo "✗ ${script}"
+            log_message "Failed to update ${script}"
         done
         echo -e "\nPlease check the update log for details: ${LOGFILE}\n"
         exit 1
@@ -188,6 +191,7 @@ the_end() {
 
     if [[ ${#UPDATED_SCRIPTS[@]} -eq 0 ]]; then
         echo -e "\nNo scripts were updated.\n"
+            log_message "No scripts were updated"
         exit 1
     fi
 
@@ -202,6 +206,7 @@ the_end() {
 }
 
 # Execute the script in order
+log_message "Start ddev-joomla-updater ====================================="
 start
 load_configfile
 check_prerequisites
