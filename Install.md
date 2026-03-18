@@ -1,0 +1,13 @@
+## Disclaimer
+
+This setup works fine on my macOS machines. Should something go wrong in your setup, check the sources I used.
+
+A logfile is created during installation.
+
+## How to install the scripts?
+
+To install, enter the following command in the terminal. The installer will backup all existing files that need to be overwritten.
+
+```
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/renekreijveld/ddev-joomla/refs/heads/main/installer/ddev-joomla-installer.sh)"
+```
