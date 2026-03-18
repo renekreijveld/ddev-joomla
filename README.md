@@ -2,7 +2,7 @@
 
 DDEV is a tool to create Docker-based PHP development environments. It gives you Container superpowers with zero required Docker skills: environments in minutes, multiple concurrent projects, and less time to deployment.
 
-DDEV runs on macOS, Windows and Linux.
+DDEV runs on macOS, Windows and Linux and on GitHub Codespaces.
 
 This set of scripts were written to better support Joomla local development in DDEV.
 
