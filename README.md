@@ -12,6 +12,10 @@ This set of scripts were written to better support Joomla local development in D
 - Support for the /api endpoint when you run your Joomla project on Nginx.
 - Create or import a MariaDB database dump from or to your Joomla project.
 
+### Requirements
+
+You need to have a working DDEV setup on your machine. Read about how to install DDEV here: <a href="https://ddev.com/get-started/" target="_blank">ddev.com/get-started</a>.
+
 ### Backup & Safety
 
 The installer script automatically creates backups of all configuration files and existing scripts before making any changes.
