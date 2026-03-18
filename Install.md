@@ -6,7 +6,7 @@ A logfile is created during installation.
 
 ## How to install the scripts?
 
-To install, enter the following command in the terminal. The installer will backup all existing files that need to be overwritten.
+To install, enter the following command in the terminal. The installer script automatically creates backups of all configuration files and existing scripts before making any changes.
 
 ```
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/renekreijveld/ddev-joomla/refs/heads/main/installer/ddev-joomla-installer.sh)"
