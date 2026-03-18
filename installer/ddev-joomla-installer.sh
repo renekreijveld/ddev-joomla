@@ -22,7 +22,7 @@ CONFIG_FILE="${CONFIG_DIR}/config"
 LOCAL_SCRIPTS=( "addsite" "jdbdump" "jdbimp" "latestjoomla" )
 
 # GitHub Repo Base URL
-GITHUB_BASE="https://github.com/renekreijveld/ddev-joomla/raw/refs/heads/main"
+GITHUB_BASE="https://raw.githubusercontent.com/renekreijveld/ddev-joomla/refs/heads/main"
 
 # Logged-in User
 USERNAME=$(whoami)
