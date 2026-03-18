@@ -115,6 +115,12 @@ ask_defaults() {
     echo -e "Your password will not be stored in a file, it is only used for the installation.\n"
     read -s -p "Your password: " PASSWORD
 
+    # Validate the password
+    if ! echo "${PASSWORD}" | sudo -S -v 2>/dev/null; then
+        echo "Error: incorrect password, exiting."
+        exit 1
+    fi
+
     # Write the values to the config file
     NOW=$(date +"%Y-%m-%d %H:%M:%S")
     echo "# Configuration file for php development environment" > "${CONFIG_FILE}"
