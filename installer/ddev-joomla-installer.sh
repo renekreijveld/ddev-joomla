@@ -9,7 +9,7 @@
 # Version history
 # 1.0 Initial version.
 
-ERSION=1.0
+VERSION=1.0
 
 # Folder where scripts are installed
 HOMEBREW_PATH=$(brew --prefix)
