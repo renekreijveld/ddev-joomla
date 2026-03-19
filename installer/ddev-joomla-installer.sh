@@ -97,7 +97,7 @@ prechecks() {
     done
 
     if [ ${#INSTALLED_SCRIPTS[@]} -gt 0 ]; then
-        echo -e "\nThe following scripts are already installed in ${SCRIPTS_DEST}:\n"
+        echo -e "\nThe following scripts are already installed at ${SCRIPTS_DEST}:\n"
         log_message "The following scripts are already installed at ${SCRIPTS_DEST}:"
         for script in "${INSTALLED_SCRIPTS[@]}"; do
             echo "- ${script}"
@@ -128,11 +128,21 @@ ask_defaults() {
     log_message "${CONFIG_DIR} created"
     echo -e "\nBefore the installation starts, some default values need to be set."
     echo "These values will be used during installation and will be saved in a config file."
-    echo "There are various scripts the depend on this config file. These scripts will not work without it."
+    echo "Some of the scripts depend on this config file and will not work without it."
     echo -e "\nThe location of the config file is ${CONFIG_FILE}.\n"
-    echo -e "If the default proposed value is correct, just press Enter.\n"
+    echo -e "If a default proposed value is correct, just press Enter.\n"
     rootfolder=$(prompt_for_input "$HOME/Development/Sites" "Directory path where your websites will be stored:")
-    webserver=$(prompt_for_input "nginx" "Default webserver for projects, nginx or apache:")
+
+    # Validate webserver input
+    while true; do
+        webserver=$(prompt_for_input "nginx" "Default webserver for projects (nginx or apache):")
+        if [[ "$webserver" == "nginx" || "$webserver" == "apache" ]]; then
+            break
+        else
+            echo "Error: Please enter either 'nginx' or 'apache'."
+        fi
+    done
+
     echo -e "You will now be asked for your password, which is needed for the installation of the scripts."
     echo -e "Your password will not be stored in a file, it is only used for the installation.\n"
     read -s -p "Your password: " PASSWORD
