@@ -75,7 +75,7 @@ start() {
     echo -e "PLEASE READ EVERYTHING CAREFULLY BEFORE CONTINUING!\n"
     echo "Installation output will be logged in the file ${LOGFILE}."
     echo -e "Check this file if you encounter any issues during installation.\n"
-    echo -e "This installer and the software it installs come without any warranty. Use it at your own risk.\nAlways backup your data and software before running the installer and use the software it installs.\n"
+    echo -e "This installer and the software it installs come without any warranty. Use it at your own risk.\nAlways backup your data and software before running the installer.\n"
     read -p "Press Enter to continue, or press Ctrl-C to abort. "
 }
 
@@ -276,7 +276,7 @@ the_end() {
     log_message "Installation completed"
     echo -e "The installation log is available at ${LOGFILE}.\n"
     echo "Enjoy DDEV with enhanced Joomla support!"
-    echo -e "\nIf you like this tool, please consider a donation to support further development: https://renekreijveld.nl/donate."
+    echo "If you like this tool, please consider a donation to support further development: https://renekreijveld.nl/donate."
 }
 
 # Execute the script in order
