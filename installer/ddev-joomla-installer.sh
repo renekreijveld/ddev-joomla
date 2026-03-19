@@ -12,7 +12,6 @@
 VERSION=1.0
 
 # Folder where scripts are installed
-HOMEBREW_PATH=$(brew --prefix)
 SCRIPTS_DEST="/usr/local/bin"
 CONFIG_DIR="${HOME}/.config/ddevjoomla"
 LOGFILE="${CONFIG_DIR}/ddev-joomla-install.log"
@@ -29,7 +28,8 @@ USERNAME=$(whoami)
 
 EXISTING_PATHS=()
 
-trap "echo 'Installation interrupted. Exiting...'; exit 1" SIGINT
+# Cleanup sudo session on exit
+trap "echo 'Installation interrupted. Exiting...'; sudo -k 2>/dev/null; exit 1" SIGINT EXIT
 
 # Function to prompt for a value, with the option to keep the current one
 prompt_for_input() {
@@ -61,14 +61,14 @@ create_config() {
     # Create config directory if it doesn't exist
     mkdir -p "${CONFIG_DIR}"
     # Create logfile
-    touch ${LOGFILE}
+    touch "${LOGFILE}"
     # Log start if installation
     log_message "Start ddev-joomla-installer ====================================="
 }
 
 start() {
     clear
-    echo -e "Welcome to the DDEV support scripts for Joomla installer ${THISVERSION}.\n"
+    echo -e "Welcome to the DDEV support scripts for Joomla installer ${VERSION}.\n"
     echo -e "\t#########################################################"
     echo -e "\t## PLEASE READ EVERYTHING CAREFULLY BEFORE CONTINUING! ##"
     echo -e "\t#########################################################\n"
@@ -76,13 +76,11 @@ start() {
     echo -e "Check this file if you encounter any issues during installation.\n"
     echo -e "This installer and the software it installs come without any warranty. Use it at your own risk.\nAlways backup your data and software before running the installer and use the software it installs.\n"
     read -p "Press Enter to start the installation, press Ctrl-C to abort. "
-    touch "${LOGFILE}"
-
 }
 
 # Function to check if a script is already installed
 is_installed() {
-    [ -f ${SCRIPTS_DEST}/$1 ]
+    [ -f "${SCRIPTS_DEST}/$1" ]
 }
 
 prechecks() {
@@ -99,7 +97,7 @@ prechecks() {
 
     if [ ${#INSTALLED_SCRIPTS[@]} -gt 0 ]; then
         echo -e "\nThe following scripts are already installed in ${SCRIPTS_DEST}:\n"
-        log_message "The following scripts are allready installed at ${SCRIPTS_DEST}:"
+        log_message "The following scripts are already installed at ${SCRIPTS_DEST}:"
         for script in "${INSTALLED_SCRIPTS[@]}"; do
             echo "- ${script}"
             log_message "- ${script}"
@@ -163,8 +161,13 @@ check_scripts_dest() {
     # Create SCRIPTS_DEST directory if it doesn't exist
     if [ ! -d "${SCRIPTS_DEST}" ]; then
         echo "${SCRIPTS_DEST} directory does not yet exist, let's create it."
-        echo "${PASSWORD}" | sudo -S mkdir -p "${SCRIPTS_DEST}" > /dev/null
-        log_message "${SCRIPTS_DEST} directory did not exist, created"
+        if echo "${PASSWORD}" | sudo -S mkdir -p "${SCRIPTS_DEST}" > /dev/null 2>&1; then
+            log_message "${SCRIPTS_DEST} directory did not exist, created"
+        else
+            echo "Error: Failed to create ${SCRIPTS_DEST} directory. Exiting."
+            log_message "Error: Failed to create ${SCRIPTS_DEST} directory"
+            exit 1
+        fi
     else
         echo "${SCRIPTS_DEST} directory already exists."
         log_message "${SCRIPTS_DEST} already exists"
@@ -172,7 +175,7 @@ check_scripts_dest() {
     # Check if SCRIPTS_DEST directory is in the shell PATH
     if [[ ":$PATH:" != *":${SCRIPTS_DEST}:"* ]]; then
         echo "${SCRIPTS_DEST} is not in your shell PATH. Make sure to add that, before you start using the scripts."
-        log_message "${SCRIPTS_DEST} not found im shell PATH"
+        log_message "${SCRIPTS_DEST} not found in shell PATH"
     else
         echo "${SCRIPTS_DEST} is already in PATH. You're good to go :-)"
         log_message "${SCRIPTS_DEST} is present in shell PATH"
@@ -203,14 +206,38 @@ install_local_scripts() {
         echo "- install ${script}."
         log_message "Install ${script}"
 
-        curl -fsSL "${GITHUB_BASE}/src/Scripts/${script}" | tee "script.${script}" > /dev/null
-
-        if [ -f "${SCRIPTS_DEST}/${script}" ]; then
-            echo "${PASSWORD}" | sudo -S mv -f "${SCRIPTS_DEST}/${script}" "${SCRIPTS_DEST}/${script}.$(date +%Y%m%d-%H%M%S)"
+        # Download the script
+        if ! curl -fSL "${GITHUB_BASE}/src/Scripts/${script}" -o "script.${script}"; then
+            echo "Error: Failed to download ${script}. Skipping."
+            log_message "Error: Failed to download ${script}"
+            continue
         fi
 
-        echo "${PASSWORD}" | sudo -S mv -f "script.${script}" "${SCRIPTS_DEST}/${script}" > /dev/null
-        echo "${PASSWORD}" | sudo -S chmod +x "${SCRIPTS_DEST}/${script}"
+        # Backup existing script if present
+        if [ -f "${SCRIPTS_DEST}/${script}" ]; then
+            if ! echo "${PASSWORD}" | sudo -S mv -f "${SCRIPTS_DEST}/${script}" "${SCRIPTS_DEST}/${script}.$(date +%Y%m%d-%H%M%S)" 2>/dev/null; then
+                echo "Error: Failed to backup existing ${script}. Skipping."
+                log_message "Error: Failed to backup ${script}"
+                rm -f "script.${script}"
+                continue
+            fi
+        fi
+
+        # Install the new script
+        if ! echo "${PASSWORD}" | sudo -S mv -f "script.${script}" "${SCRIPTS_DEST}/${script}" 2>/dev/null; then
+            echo "Error: Failed to install ${script}. Skipping."
+            log_message "Error: Failed to install ${script}"
+            rm -f "script.${script}"
+            continue
+        fi
+
+        # Make it executable
+        if ! echo "${PASSWORD}" | sudo -S chmod +x "${SCRIPTS_DEST}/${script}" 2>/dev/null; then
+            echo "Error: Failed to make ${script} executable. Skipping."
+            log_message "Error: Failed to make ${script} executable"
+            continue
+        fi
+
         test_script_path "${SCRIPTS_DEST}/${script}"
     done
 }
@@ -228,8 +255,8 @@ report_existing_paths() {
         done
         echo -e "\nAll new scripts are installed in ${SCRIPTS_DEST}."
         echo "The scripts in the list above are still available in the old locations and these might come first in the PATH variable."
-        echo -e "If you want to use the new development enviroment,\nyou MUST delete or rename the scripts in the old locations first!.\n"
-        echo -e "Staring the new environment without cleaning up the old scripts first, will result in errors."
+        echo -e "If you want to use the new development environment,\nyou MUST delete or rename the scripts in the old locations first!.\n"
+        echo -e "Starting the new environment without cleaning up the old scripts first, will result in errors."
     fi
 }
 
