@@ -57,6 +57,15 @@ log_message() {
     fi
 }
 
+create_config() {
+    # Create config directory if it doesn't exist
+    mkdir -p "${CONFIG_DIR}"
+    # Create logfile
+    touch ${LOGFILE}
+    # Log start if installation
+    log_message "Start ddev-joomla-installer ====================================="
+}
+
 start() {
     clear
     echo -e "Welcome to the DDEV support scripts for Joomla installer ${THISVERSION}.\n"
@@ -68,6 +77,7 @@ start() {
     echo -e "This installer and the software it installs come without any warranty. Use it at your own risk.\nAlways backup your data and software before running the installer and use the software it installs.\n"
     read -p "Press Enter to start the installation, press Ctrl-C to abort. "
     touch "${LOGFILE}"
+
 }
 
 # Function to check if a script is already installed
@@ -116,8 +126,6 @@ ask_defaults() {
         log_message "Existing config file backupped to ${BACKUPFILE}"
     fi
 
-    # Create config directory if it doesn't exist
-    mkdir -p "${CONFIG_DIR}"
     log_message "${CONFIG_DIR} created"
     echo -e "\nBefore the installation starts, some default values need to be set."
     echo "These values will be used during installation and will be saved in a config file."
@@ -234,7 +242,7 @@ the_end() {
 }
 
 # Execute the script in order
-log_message "Start ddev-joomla-installer ====================================="
+create_config
 start
 prechecks
 ask_defaults
