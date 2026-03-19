@@ -28,8 +28,11 @@ USERNAME=$(whoami)
 
 EXISTING_PATHS=()
 
-# Cleanup sudo session on exit
-trap "echo 'Installation interrupted. Exiting...'; sudo -k 2>/dev/null; exit 1" SIGINT EXIT
+# Cleanup sudo session on interrupt
+trap "echo 'Installation interrupted. Exiting...'; sudo -k 2>/dev/null; exit 1" SIGINT
+
+# Cleanup sudo session on normal exit
+trap "sudo -k 2>/dev/null" EXIT
 
 # Function to prompt for a value, with the option to keep the current one
 prompt_for_input() {
@@ -155,10 +158,10 @@ check_scripts_dest() {
     log_message "Running check_scripts_dest"
     clear
 
-    echo "Check for existance of ${SCRIPTS_DEST}."
+    echo "Check for existance of ${SCRIPTS_DEST}: "
     # Create SCRIPTS_DEST directory if it doesn't exist
     if [ ! -d "${SCRIPTS_DEST}" ]; then
-        echo "${SCRIPTS_DEST} directory does not yet exist, let's create it."
+        echo "Directory does not yet exist, let's create it."
         if echo "${PASSWORD}" | sudo -S mkdir -p "${SCRIPTS_DEST}" > /dev/null 2>&1; then
             log_message "${SCRIPTS_DEST} directory did not exist, created"
         else
@@ -167,7 +170,7 @@ check_scripts_dest() {
             exit 1
         fi
     else
-        echo "${SCRIPTS_DEST} directory already exists."
+        echo "Directory already exists."
         log_message "${SCRIPTS_DEST} already exists"
     fi
     # Check if SCRIPTS_DEST directory is in the shell PATH
@@ -175,7 +178,7 @@ check_scripts_dest() {
         echo "${SCRIPTS_DEST} is not in your shell PATH. Make sure to add that, before you start using the scripts."
         log_message "${SCRIPTS_DEST} not found in shell PATH"
     else
-        echo "${SCRIPTS_DEST} is already in PATH. You're good to go :-)"
+        echo "${SCRIPTS_DEST} is already in your PATH. You are good to go."
         log_message "${SCRIPTS_DEST} is present in shell PATH"
     fi
 }
@@ -198,8 +201,8 @@ create_local_folders() {
 install_local_scripts() {
     log_message "Running install_local_scripts"
 
-    echo -e "\nInstall local scripts:"
-    echo -e "If a script already exists, a backup copy will be made."
+    echo -e "\nIf a script already exists, a backup copy will be made."
+    echo -e "Install local scripts:\n"
     for script in "${LOCAL_SCRIPTS[@]}"; do
         echo "- install ${script}."
         log_message "Install ${script}"
@@ -259,7 +262,7 @@ report_existing_paths() {
 }
 
 the_end() {
-    echo -e "\nInstallation completed!\n"
+    echo -e "\nInstallation completed."
     log_message "Installation completed"
     echo -e "The installation log is available at ${LOGFILE}.\n"
     echo "Enjoy DDEV with enhanced Joomla support!"
