@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# gosite -- Go to a Joomla instance on your server
+# Supports Joomla versions 1.0 - 5.x
+#
+# Written by René Kreijveld - email@renekreijveld.nl
+# This script is free software; you may redistribute it and/or modify it.
+# This script comes without any warranty. Use it at your own risk.
+#
+# Version history:
+# 1.0 Initial version
+
+THISVERSION=1.0
+
+MYPATH=$(cd "$(dirname "$0")"; pwd -P)
+MYNAME=$(basename "$0")
+ROOTFOLDER=/Users/renekreijveld/Development/Ddev
+
+# show message function
+showmessage() {
+    echo -e "$1" >&2
+}
+
+# Scan directories for Joomla instances
+JOOMLA_SITES=()
+
+while IFS= read -r -d '' DIR; do
+    if [[ -f "${DIR}/configuration.php" ]]; then
+        JOOMLA_SITES+=("$DIR")
+    fi
+done < <(find "${ROOTFOLDER}" -maxdepth 3 -type d -print0)
+
+# Check if any Joomla sites were found
+if [[ ${#JOOMLA_SITES[@]} -eq 0 ]]; then
+    showmessage "No Joomla websites found in ${ROOTFOLDER}"
+    exit 1
+fi
+
+# Sort the array alphabetically
+JOOMLA_SITES=($(printf '%s\n' "${JOOMLA_SITES[@]}" | sort))
+
+# Display the list of Joomla sites
+showmessage "\nFound ${#JOOMLA_SITES[@]} Joomla website(s):\n"
+for i in "${!JOOMLA_SITES[@]}"; do
+    SITE_NAME=$(basename "${JOOMLA_SITES[$i]}")
+    printf "%2d) %s\n" $((i+1)) "${JOOMLA_SITES[$i]}" >&2
+done
+
+# Ask user to select a site
+echo >&2
+read -p "Select a site to navigate to (1-${#JOOMLA_SITES[@]}): " SELECTION >&2
+
+# Validate selection
+if ! [[ "$SELECTION" =~ ^[0-9]+$ ]] || [[ "$SELECTION" -lt 1 ]] || [[ "$SELECTION" -gt ${#JOOMLA_SITES[@]} ]]; then
+    showmessage "Invalid selection. Please enter a number between 1 and ${#JOOMLA_SITES[@]}."
+    exit 1
+fi
+
+# Get the selected directory
+SELECTED_DIR="${JOOMLA_SITES[$((SELECTION-1))]}"
+
+# Output the directory path for the parent shell to use
+echo "$SELECTED_DIR"
+
