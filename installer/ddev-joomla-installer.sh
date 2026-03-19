@@ -287,8 +287,15 @@ setup_shell_function() {
         return
     fi
 
-    # Function definition
-    GOSITE_FUNCTION=$(cat <<'EOF'
+    # Check if function already exists in RC file
+    if grep -q "^gosite()" "${RC_FILE}" 2>/dev/null; then
+        echo "${SHELL_TYPE} configuration already has gosite function."
+        log_message "gosite function already exists in ${RC_FILE}"
+        return
+    fi
+
+    # Add the function to the RC file using a heredoc
+    if cat >> "${RC_FILE}" <<'BASHEOF'
 
 # gosite function - enables cd to Joomla site with gosite command
 gosite() {
@@ -300,21 +307,11 @@ gosite() {
         return 1
     fi
 }
-EOF
-)
-
-    # Check if function already exists in RC file
-    if grep -q "^gosite()" "${RC_FILE}" 2>/dev/null; then
-        echo "${SHELL_TYPE} configuration already has gosite function."
-        log_message "gosite function already exists in ${RC_FILE}"
-        return
-    fi
-
-    # Add the function to the RC file
-    if echo "${GOSITE_FUNCTION}" >> "${RC_FILE}"; then
-        echo "gosite function added to ${RC_FILE}"
-        log_message "gosite function added to ${RC_FILE}"
-        echo -e "\nTo use the gosite function, run: source ${RC_FILE}"
+BASHEOF
+    then
+        echo -e "\nAdded gosite function to ${RC_FILE}"
+        log_message "Added gosite function to ${RC_FILE}"
+        echo -e "To use the gosite function, run: source ${RC_FILE}\n"
     else
         echo "Error: Failed to add gosite function to ${RC_FILE}"
         log_message "Error: Failed to add gosite function to ${RC_FILE}"
