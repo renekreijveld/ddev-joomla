@@ -132,6 +132,7 @@ ask_defaults() {
     echo -e "\nThe location of the config file is ${CONFIG_FILE}.\n"
     echo -e "If a default proposed value is correct, just press Enter.\n"
     rootfolder=$(prompt_for_input "$HOME/Development/Sites" "Directory path where your websites will be stored:")
+    backupfolder=$(prompt_for_input "$HOME/Development/Backup" "Directory path where your backups will be stored:")
 
     # Validate webserver input
     while true; do
@@ -159,6 +160,7 @@ ask_defaults() {
     echo "# Configuration file for php development environment" > "${CONFIG_FILE}"
     echo "# Generated at ${NOW}" >> "${CONFIG_FILE}"
     echo "ROOTFOLDER=${rootfolder}" >> "${CONFIG_FILE}"
+    echo "BACKUPFOLDER=${backupfolder}" >> "${CONFIG_FILE}"
     echo "WEBSERVER=${webserver}" >> "${CONFIG_FILE}"
     echo "INSTALLER_VERSION=${VERSION}" >> "${CONFIG_FILE}"
     log_message "Generated config file ${CONFIG_FILE}"
@@ -205,13 +207,11 @@ test_script_path() {
 create_local_folders() {
     mkdir -p "${ROOTFOLDER}"
     log_message "${ROOTFOLDER} created"
-
 }
 
 install_local_scripts() {
     log_message "Running install_local_scripts"
 
-    echo -e "\nIf a script already exists, a backup copy will be made."
     echo -e "Install local scripts:\n"
     for script in "${LOCAL_SCRIPTS[@]}"; do
         echo "- install ${script}."
