@@ -69,9 +69,7 @@ create_config() {
 start() {
     clear
     echo -e "Welcome to the DDEV support scripts for Joomla installer ${VERSION}.\n"
-    echo -e "\t#########################################################"
-    echo -e "\t## PLEASE READ EVERYTHING CAREFULLY BEFORE CONTINUING! ##"
-    echo -e "\t#########################################################\n"
+    echo -e "PLEASE READ EVERYTHING CAREFULLY BEFORE CONTINUING!\n"
     echo "Installation output will be logged in the file ${LOGFILE}."
     echo -e "Check this file if you encounter any issues during installation.\n"
     echo -e "This installer and the software it installs come without any warranty. Use it at your own risk.\nAlways backup your data and software before running the installer and use the software it installs.\n"
