@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # gosite -- Go to a Joomla instance on your server
-# Supports Joomla versions 1.0 - 5.x
 #
 # Written by René Kreijveld - email@renekreijveld.nl
 # This script is free software; you may redistribute it and/or modify it.
@@ -10,11 +9,21 @@
 # Version history:
 # 1.0 Initial version
 
-THISVERSION=1.0
+VERSION=1.0
 
 MYPATH=$(cd "$(dirname "$0")"; pwd -P)
 MYNAME=$(basename "$0")
-ROOTFOLDER=/Users/renekreijveld/Development/Ddev
+CONFIG_DIR="${HOME}/.config/ddevjoomla"
+CONFIG_FILE="${CONFIG_DIR}/config"
+
+# Verify config file exists before sourcing
+if [ ! -f "${CONFIG_FILE}" ]; then
+    echo "Error: Config file ${CONFIG_FILE} not found. Exiting."
+    log_message "Error: Config file ${CONFIG_FILE} not found"
+    exit 1
+fi
+
+source "${CONFIG_FILE}"
 
 # show message function
 showmessage() {
@@ -59,6 +68,5 @@ fi
 # Get the selected directory
 SELECTED_DIR="${JOOMLA_SITES[$((SELECTION-1))]}"
 
-# Output the directory path for the parent shell to use
+# Output the directory path (will be used by the gosite shell function)
 echo "$SELECTED_DIR"
-

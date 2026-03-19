@@ -271,6 +271,56 @@ report_existing_paths() {
     fi
 }
 
+setup_shell_function() {
+    log_message "Running setup_shell_function"
+
+    # Detect the shell
+    if [[ "$SHELL" == *"zsh"* ]]; then
+        RC_FILE="${HOME}/.zshrc"
+        SHELL_TYPE="zsh"
+    elif [[ "$SHELL" == *"bash"* ]]; then
+        RC_FILE="${HOME}/.bashrc"
+        SHELL_TYPE="bash"
+    else
+        echo "Warning: Unsupported shell. gosite function not configured."
+        log_message "Warning: Unsupported shell ($SHELL)"
+        return
+    fi
+
+    # Function definition
+    GOSITE_FUNCTION=$(cat <<'EOF'
+
+# gosite function - enables cd to Joomla site with gosite command
+gosite() {
+    local RESULT
+    RESULT=$(command /usr/local/bin/gosite)
+    if [ $? -eq 0 ]; then
+        cd "$RESULT"
+    else
+        return 1
+    fi
+}
+EOF
+)
+
+    # Check if function already exists in RC file
+    if grep -q "^gosite()" "${RC_FILE}" 2>/dev/null; then
+        echo "${SHELL_TYPE} configuration already has gosite function."
+        log_message "gosite function already exists in ${RC_FILE}"
+        return
+    fi
+
+    # Add the function to the RC file
+    if echo "${GOSITE_FUNCTION}" >> "${RC_FILE}"; then
+        echo "gosite function added to ${RC_FILE}"
+        log_message "gosite function added to ${RC_FILE}"
+        echo -e "\nTo use the gosite function, run: source ${RC_FILE}"
+    else
+        echo "Error: Failed to add gosite function to ${RC_FILE}"
+        log_message "Error: Failed to add gosite function to ${RC_FILE}"
+    fi
+}
+
 the_end() {
     echo -e "\nInstallation completed."
     log_message "Installation completed"
@@ -289,4 +339,5 @@ check_scripts_dest
 create_local_folders
 install_local_scripts
 report_existing_paths
+setup_shell_function
 the_end
