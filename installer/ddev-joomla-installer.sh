@@ -271,45 +271,38 @@ report_existing_paths() {
     fi
 }
 
-setup_shell_wrapper() {
-    log_message "Running setup_shell_wrapper"
+setup_shell_function() {
+    log_message "Running setup_shell_function"
 
-    # Create a wrapper script that enables cd with gosite
-    local WRAPPER_SCRIPT="${SCRIPTS_DEST}/gosite-cd"
-
-    # Create the wrapper script
-    if echo "${PASSWORD}" | sudo -S tee "${WRAPPER_SCRIPT}" > /dev/null <<'WRAPPER_EOF'
-#!/bin/bash
-# gosite-cd wrapper - allows cd to Joomla site via eval
-# Usage: eval "$(gosite-cd)" or cd "$(gosite-cd select)" to just output the path
-
-GOSITE_BIN="/usr/local/bin/gosite"
-
-if [ "$1" = "select" ]; then
-    # Just output the directory path for piping
-    "$GOSITE_BIN"
-else
-    # Output cd command for eval
-    local RESULT
-    RESULT=$("$GOSITE_BIN")
-    if [ $? -eq 0 ]; then
-        echo "cd \"$RESULT\""
+    # Detect the shell
+    if [[ "$SHELL" == *"zsh"* ]]; then
+        RC_FILE="${HOME}/.zshrc"
+        SHELL_TYPE="zsh"
+    elif [[ "$SHELL" == *"bash"* ]]; then
+        RC_FILE="${HOME}/.bashrc"
+        SHELL_TYPE="bash"
     else
-        return 1
+        echo "Warning: Unsupported shell. gosite function not configured."
+        log_message "Warning: Unsupported shell ($SHELL)"
+        return
     fi
-fi
-WRAPPER_EOF
-    then
-        echo "${PASSWORD}" | sudo -S chmod +x "${WRAPPER_SCRIPT}"
-        echo -e "\nSetup complete! You can now use gosite in two ways:"
-        log_message "gosite wrapper script created at ${WRAPPER_SCRIPT}"
-        echo -e "\n  Option 1: Change directory directly"
-        echo "    eval \"\$(gosite)\""
-        echo -e "\n  Option 2: Just get the path without changing"
-        echo "    cd \"\$(gosite select)\""
+
+    # Check if function already exists in RC file
+    if grep -q "^gosite()" "${RC_FILE}" 2>/dev/null; then
+        echo "${SHELL_TYPE} configuration already has gosite function."
+        log_message "gosite function already exists in ${RC_FILE}"
+        return
+    fi
+
+    # Add the function to the RC file using printf
+    if printf '\n# gosite function - enables cd to Joomla site with gosite command\ngosite() {\n    local RESULT\n    RESULT=$(command /usr/local/bin/gosite)\n    if [ $? -eq 0 ]; then\n        cd "$RESULT"\n    else\n        return 1\n    fi\n}\n' >> "${RC_FILE}"; then
+        echo -e "\nAdded gosite function to ${RC_FILE}"
+        log_message "Added gosite function to ${RC_FILE}"
+        echo -e "To activate the gosite function now, run: source ${RC_FILE}\n"
+        echo "It will be available automatically in all new terminal sessions."
     else
-        echo "Error: Failed to create gosite wrapper script"
-        log_message "Error: Failed to create gosite wrapper script"
+        echo "Error: Failed to add gosite function to ${RC_FILE}"
+        log_message "Error: Failed to add gosite function to ${RC_FILE}"
     fi
 }
 
@@ -331,5 +324,5 @@ check_scripts_dest
 create_local_folders
 install_local_scripts
 report_existing_paths
-setup_shell_wrapper
+setup_shell_function
 the_end
