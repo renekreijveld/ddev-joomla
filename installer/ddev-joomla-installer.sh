@@ -130,7 +130,7 @@ ask_defaults() {
     echo -e "If the default proposed value is correct, just press Enter.\n"
     rootfolder=$(prompt_for_input "$HOME/Development/Sites" "Directory path where your websites will be stored:")
     webserver=$(prompt_for_input "nginx" "Default webserver for projects, nginx or apache:")
-    echo -e "You will now be asked for your password, which is needed for the installation of the scripts.\n"
+    echo -e "You will now be asked for your password, which is needed for the installation of the scripts."
     echo -e "Your password will not be stored in a file, it is only used for the installation.\n"
     read -s -p "Your password: " PASSWORD
 
@@ -205,7 +205,7 @@ install_local_scripts() {
         log_message "Install ${script}"
 
         # Download the script
-        if ! curl -fSL "${GITHUB_BASE}/src/Scripts/${script}" -o "script.${script}"; then
+        if ! curl -fsL "${GITHUB_BASE}/src/Scripts/${script}" -o "script.${script}"; then
             echo "Error: Failed to download ${script}. Skipping."
             log_message "Error: Failed to download ${script}"
             continue
