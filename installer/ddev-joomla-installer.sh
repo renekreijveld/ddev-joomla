@@ -271,50 +271,45 @@ report_existing_paths() {
     fi
 }
 
-setup_shell_function() {
-    log_message "Running setup_shell_function"
+setup_shell_wrapper() {
+    log_message "Running setup_shell_wrapper"
 
-    # Detect the shell
-    if [[ "$SHELL" == *"zsh"* ]]; then
-        RC_FILE="${HOME}/.zshrc"
-        SHELL_TYPE="zsh"
-    elif [[ "$SHELL" == *"bash"* ]]; then
-        RC_FILE="${HOME}/.bashrc"
-        SHELL_TYPE="bash"
-    else
-        echo "Warning: Unsupported shell. gosite function not configured."
-        log_message "Warning: Unsupported shell ($SHELL)"
-        return
-    fi
+    # Create a wrapper script that enables cd with gosite
+    local WRAPPER_SCRIPT="${SCRIPTS_DEST}/gosite-cd"
 
-    # Check if function already exists in RC file
-    if grep -q "^gosite()" "${RC_FILE}" 2>/dev/null; then
-        echo "${SHELL_TYPE} configuration already has gosite function."
-        log_message "gosite function already exists in ${RC_FILE}"
-        return
-    fi
+    # Create the wrapper script
+    if echo "${PASSWORD}" | sudo -S tee "${WRAPPER_SCRIPT}" > /dev/null <<'WRAPPER_EOF'
+#!/bin/bash
+# gosite-cd wrapper - allows cd to Joomla site via eval
+# Usage: eval "$(gosite-cd)" or cd "$(gosite-cd select)" to just output the path
 
-    # Add the function to the RC file using a heredoc
-    if cat >> "${RC_FILE}" <<'BASHEOF'
+GOSITE_BIN="/usr/local/bin/gosite"
 
-# gosite function - enables cd to Joomla site with gosite command
-gosite() {
+if [ "$1" = "select" ]; then
+    # Just output the directory path for piping
+    "$GOSITE_BIN"
+else
+    # Output cd command for eval
     local RESULT
-    RESULT=$(command /usr/local/bin/gosite)
+    RESULT=$("$GOSITE_BIN")
     if [ $? -eq 0 ]; then
-        cd "$RESULT"
+        echo "cd \"$RESULT\""
     else
         return 1
     fi
-}
-BASHEOF
+fi
+WRAPPER_EOF
     then
-        echo -e "\nAdded gosite function to ${RC_FILE}"
-        log_message "Added gosite function to ${RC_FILE}"
-        echo -e "To use the gosite function, run: source ${RC_FILE}\n"
+        echo "${PASSWORD}" | sudo -S chmod +x "${WRAPPER_SCRIPT}"
+        echo -e "\nSetup complete! You can now use gosite in two ways:"
+        log_message "gosite wrapper script created at ${WRAPPER_SCRIPT}"
+        echo -e "\n  Option 1: Change directory directly"
+        echo "    eval \"\$(gosite)\""
+        echo -e "\n  Option 2: Just get the path without changing"
+        echo "    cd \"\$(gosite select)\""
     else
-        echo "Error: Failed to add gosite function to ${RC_FILE}"
-        log_message "Error: Failed to add gosite function to ${RC_FILE}"
+        echo "Error: Failed to create gosite wrapper script"
+        log_message "Error: Failed to create gosite wrapper script"
     fi
 }
 
@@ -336,5 +331,5 @@ check_scripts_dest
 create_local_folders
 install_local_scripts
 report_existing_paths
-setup_shell_function
+setup_shell_wrapper
 the_end
