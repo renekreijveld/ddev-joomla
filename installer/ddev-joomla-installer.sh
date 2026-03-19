@@ -101,10 +101,10 @@ prechecks() {
         echo -e "\nThe following scripts are already installed in ${SCRIPTS_DEST}:\n"
         log_message "The following scripts are allready installed at ${SCRIPTS_DEST}:"
         for script in "${INSTALLED_SCRIPTS[@]}"; do
-            echo "- ${formula}"
-            log_message "- ${formula}"
+            echo "- ${script}"
+            log_message "- ${script}"
         done
-        echo -e "\nThis installer does not update these scripts but will make a backup of the original script.\n"
+        echo -e "\nThe installer will create backups of these scripts.\n"
         read -p "Press Enter to start the installation, or press Ctrl-C to abort. "
     else
         echo "None of the scripts were already installed. Proceeding."
