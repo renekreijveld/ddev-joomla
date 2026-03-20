@@ -131,8 +131,8 @@ ask_defaults() {
     echo "Some of the scripts depend on this config file and will not work without it."
     echo -e "\nThe location of the config file is ${CONFIG_FILE}.\n"
     echo -e "If a default proposed value is correct, just press Enter.\n"
-    rootfolder=$(prompt_for_input "$HOME/Development/Sites" "Directory path where your websites will be stored:")
-    backupfolder=$(prompt_for_input "$HOME/Development/Backup" "Directory path where your backups will be stored:")
+    rootfolder=$(prompt_for_input "$HOME/Development/sites" "Directory path where your websites will be stored:")
+    backupfolder=$(prompt_for_input "$HOME/Development/backup" "Directory path where your backups will be stored:")
 
     # Validate webserver input
     while true; do
@@ -205,8 +205,10 @@ test_script_path() {
 }
 
 create_local_folders() {
-    mkdir -p "${ROOTFOLDER}"
-    log_message "${ROOTFOLDER} created"
+    mkdir -p "${rootfolder}"
+    log_message "${rootfolder} created"
+    mkdir -p "${backupfolder}"
+    log_message "${backupfolder} created"
 }
 
 install_local_scripts() {
