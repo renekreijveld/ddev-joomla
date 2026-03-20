@@ -18,7 +18,6 @@ VERSION=1.1
 MYNAME=$(basename "${0}")
 
 # root folder for websites
-SITEROOT=${HOME}/Development/Ddev
 CONFIG_DIR="${HOME}/.config/ddevjoomla"
 CONFIG_FILE="${CONFIG_DIR}/config"
 
@@ -134,7 +133,7 @@ fi
 showmessage "Add new website ${WEBSITE_NAME} to DDEV."
 
 # Set website root folder
-SITE_FOLDER=${SITEROOT}/${WEBSITE_NAME}
+SITE_FOLDER=${ROOTFOLDER}/${WEBSITE_NAME}
 
 # Ask for confirmation before proceeding
 echo -e "Ready to set up website '${WEBSITE_NAME}' with PHP ${PHP_VERSION} using ${WEBSERVER} in ${SITE_FOLDER}."
