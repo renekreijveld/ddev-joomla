@@ -164,7 +164,7 @@ fi
 
 # Create DDEV config
 showmessage "Creating DDEV config"
-ddev config --project-type=php --webserver-type=${WEBSERVER}-fpm --php-version="${PHP_VERSION}" --upload-dirs=images
+ddev config --project-type=php --webserver-type=${WEBSERVER}-fpm --docroot=. --php-version="${PHP_VERSION}" --upload-dirs=images
 
 # Add joomla.ini
 echo "display_errors = off" > "${SITE_FOLDER}/.ddev/php/joomla.ini"
