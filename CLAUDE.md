@@ -48,6 +48,7 @@ Each script sources this config at startup.
 | `jdbimp` | Import a database dump (`ddev import-db`) |
 | `jbackup` | Full site backup: database dump + compressed archive (`.tgz` or `.zip`) |
 | `gosite` | Interactive selector to `cd` into a Joomla site (requires shell function wrapper in `.zshrc`/`.bashrc`) |
+| `jlistjoomlas` | List all Joomla sites found under the configured root folder |
 | `setrights` | Set correct file permissions (644 files, 755 dirs) |
 | `jddev` | Show all available scripts and their command-line parameters |
 | `jddev-update` | Update all ddev-joomla scripts from the GitHub main branch |

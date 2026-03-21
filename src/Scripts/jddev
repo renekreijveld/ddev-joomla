@@ -70,6 +70,12 @@ echo -e "  -o  Overwrite existing backup file and/or database dump (optional)."
 echo -e "  -s  Silent, no messages will be shown (optional)."
 echo -e "  -h  Display help.\n"
 
+echo -e "jlistjoomlas -- List all Joomla sites found under the configured root folder."
+echo -e "  Usage: jlistjoomlas [-s] [-r <release>] [-h]"
+echo -e "  -s  Short, only display path and Joomla version (optional)."
+echo -e "  -r  Only display sites matching given release prefix, e.g. 4 or 5 (optional)."
+echo -e "  -h  Display help.\n"
+
 echo -e "gosite -- Interactively navigate to a Joomla site folder."
 echo -e "  Usage: gosite"
 echo -e "  Note: Requires a shell wrapper function in .zshrc/.bashrc:"

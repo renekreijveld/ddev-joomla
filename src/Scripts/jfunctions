@@ -1,0 +1,127 @@
+#!/bin/bash
+
+# jfunctions - general bash functions for use in Joomla scripts
+# Supports all Joomla versions
+#
+# Written by René Kreijveld - email@renekreijveld.nl
+# This script is free software; you may redistribute it and/or modify it.
+# This script comes without any warranty. Use it at your own risk.
+
+# Define general variables
+THISVERSION=3.6
+
+joomlaconf=./configuration.php
+versionf1017=./includes/version.php
+versionf1516=./libraries/joomla/version.php
+versionf2537=./libraries/cms/version/version.php
+versionf38plus=./libraries/src/Version.php
+version4=./includes/app.php
+
+# Grab site info for Joomla version 1.0
+get_joomla10_info()
+{
+	sitename=$(grep '$mosConfig_sitename =' ${joomlaconf} | cut -d \' -f 2 | sed 's/ /_/g')
+	sitenameclean=$(grep '$mosConfig_sitename =' ${joomlaconf} | cut -d \' -f 2)
+	database=$(grep '$mosConfig_db =' ${joomlaconf} | cut -d \' -f 2)
+	dbuser=$(grep '$mosConfig_user =' ${joomlaconf} | cut -d \' -f 2)
+	password=$(grep '$mosConfig_password =' ${joomlaconf} | cut -d \' -f 2)
+	host=$(grep '$mosConfig_host =' ${joomlaconf} | cut -d \' -f 2)
+	prefix=$(grep '$mosConfig_dbprefix =' ${joomlaconf} | cut -d \' -f 2)
+	versr=$(grep '$RELEASE =' ${versionfile} | cut -d \' -f 2)
+	versd=$(grep '$DEV_LEVEL =' ${versionfile} | cut -d \' -f 2)
+	verss=$(grep '$DEV_STATUS =' ${versionfile} | cut -d \' -f 2)
+}
+
+# Grab site info for Joomla version 1.5 - 1.7
+get_joomla1517_info()
+{
+	sitename=$(grep '$sitename =' ${joomlaconf} | cut -d \' -f 2 | sed 's/ /_/g')
+	sitenameclean=$(grep '$sitename =' ${joomlaconf} | cut -d \' -f 2)
+	database=$(grep '$db =' ${joomlaconf} | cut -d \' -f 2)
+	dbuser=$(grep '$user =' ${joomlaconf} | cut -d \' -f 2)
+	password=$(grep '$password =' ${joomlaconf} | cut -d \' -f 2)
+	host=$(grep '$host =' ${joomlaconf} | cut -d \' -f 2)
+	prefix=$(grep '$dbprefix =' ${joomlaconf} | cut -d \' -f 2)
+	versr=$(grep '$RELEASE' ${versionfile} | cut -d \' -f 2)
+	versd=$(grep '$DEV_LEVEL' ${versionfile} | cut -d \' -f 2)
+	verss=$(grep '$DEV_STATUS' ${versionfile} | cut -d \' -f 2)
+}
+
+# Grab site info for Joomla version 2.5 and up
+get_joomla25up_info()
+{
+	sitename=$(grep '$sitename =' ${joomlaconf} | cut -d \' -f 2 | sed 's/ /_/g')
+	sitenameclean=$(grep '$sitename =' ${joomlaconf} | cut -d \' -f 2)
+	database=$(grep '$db =' ${joomlaconf} | cut -d \' -f 2)
+	dbuser=$(grep '$user =' ${joomlaconf} | cut -d \' -f 2)
+	password=$(grep '$password =' ${joomlaconf} | cut -d \' -f 2)
+	host=$(grep '$host =' ${joomlaconf} | cut -d \' -f 2)
+	prefix=$(grep '$dbprefix =' ${joomlaconf} | cut -d \' -f 2)
+	versr=$(grep 'RELEASE =' ${versionfile} | cut -d \' -f 2)
+	versd=$(grep 'DEV_LEVEL =' ${versionfile} | cut -d \' -f 2)
+	verss=$(grep 'DEV_STATUS =' ${versionfile} | cut -d \' -f 2)
+}
+
+# Grab site info for Joomla version 4.0 and up
+get_joomla4up_info()
+{
+	sitename=$(grep '$sitename =' ${joomlaconf} | cut -d \' -f 2 | sed 's/ /_/g')
+	sitenameclean=$(grep '$sitename =' ${joomlaconf} | cut -d \' -f 2)
+	database=$(grep '$db =' ${joomlaconf} | cut -d \' -f 2)
+	dbuser=$(grep '$user =' ${joomlaconf} | cut -d \' -f 2)
+	password=$(grep '$password =' ${joomlaconf} | cut -d \' -f 2)
+	host=$(grep '$host =' ${joomlaconf} | cut -d \' -f 2)
+	prefix=$(grep '$dbprefix =' ${joomlaconf} | cut -d \' -f 2)
+	versr=$(grep 'MAJOR_VERSION =' ${versionfile} | cut -d " " -f 9 | cut -d ";" -f 1)
+	versd=$(grep 'MINOR_VERSION =' ${versionfile} | cut -d " " -f 9 | cut -d ";" -f 1)
+	verss=$(grep 'PATCH_VERSION =' ${versionfile} | cut -d " " -f 9 | cut -d ";" -f 1)
+}
+
+# Check if configuration.php exists
+if [ ! -e ${joomlaconf} ]; then
+	echo "File configuration.php not found. Are you at the root of the site?"
+	exit 1
+fi
+
+# Test for Joomla 1.0 or 1.7
+if [ -e ${versionf1017} ]; then
+	# Joomla 1.0 and 1.7 use the same version file, so need to check for 1.0 or 1.7
+	release=`grep '$RELEASE' ${versionf1017} | cut -d \' -f 2`
+	if echo "${release}" | grep -q "1.0"; then
+		versionfile=${versionf1017}
+		get_joomla10_info
+	fi
+	if echo "${release}" | grep -q "1.7"; then
+		versionfile=${versionf1017}
+		get_joomla1517_info
+	fi
+fi
+
+# Test for Joomla 1.5 or 1.6
+if [ -e ${versionf1516} ]; then
+	versionfile=${versionf1516}
+	get_joomla1517_info
+fi
+
+# Test for Joomla 2.5 - 3.7
+if [ -f ${versionf2537} ]; then
+	versionfile=${versionf2537}
+	get_joomla25up_info
+fi
+
+# Test for Joomla 3.8 and up
+if [ -f ${versionf38plus} ]; then
+	if [ -e ${version4} ]; then
+		versionfile=${versionf38plus}
+		get_joomla4up_info
+	else
+		versionfile=${versionf38plus}
+		get_joomla25up_info
+	fi
+fi
+# Set jversion
+if [ -e ${version4} ]; then
+	jversion=$versr.$versd.$verss
+else
+	jversion=$versr.$versd
+fi

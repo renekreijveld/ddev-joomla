@@ -1,0 +1,173 @@
+#!/bin/bash
+
+# jlistjoomlas -- Find Joomla websites in your DDEV setup.
+# Supports Joomla versions 1.0 - 5.x
+#
+# Written by René Kreijveld - email@renekreijveld.nl
+# This script is free software; you may redistribute it and/or modify it.
+# This script comes without any warranty. Use it at your own risk.
+#
+# Version history:
+# 1.0 Initial version
+# 2.0 Combined with jfunctions, fixed version display, fixed bugs
+
+VERSION=2.0
+
+MYNAME=$(basename "$0")
+
+CONFIG_DIR="${HOME}/.config/ddevjoomla"
+CONFIG_FILE="${CONFIG_DIR}/config"
+
+# Load configuration file defaults
+if [[ -f "${CONFIG_FILE}" ]]; then
+    source "${CONFIG_FILE}"
+else
+    echo "Error: configuration file ${CONFIG_FILE} not found, exiting."
+    exit 1
+fi
+
+# Display usage information
+usage() {
+    echo -e "${MYNAME} ${VERSION}, written by René Kreijveld.\n"
+    echo -e "Usage: ${MYNAME} [-s] [-r <release>] [-h]\n"
+    echo "-s Short. Only display path and Joomla version."
+    echo "-r Release. Only display sites matching given release prefix (e.g. 3, 4, 5)."
+    echo -e "-h Help. Display this info.\n"
+    exit 0
+}
+
+# Variables
+SHORT="no"
+RELEASEVERSION=""
+
+while getopts "shr:" opt; do
+    case "${opt}" in
+        s) SHORT="yes" ;;
+        r) RELEASEVERSION="${OPTARG}" ;;
+        h) usage ;;
+        \?) usage ;;
+    esac
+done
+
+echo -e "${MYNAME} ${VERSION}\n"
+
+# --- Joomla version detection ---
+
+joomlaconf="./configuration.php"
+versionf1017="./includes/version.php"
+versionf1516="./libraries/joomla/version.php"
+versionf2537="./libraries/cms/version/version.php"
+versionf38plus="./libraries/src/Version.php"
+version4="./includes/app.php"
+
+get_joomla10_info() {
+    sitenameclean=$(grep '$mosConfig_sitename =' "${joomlaconf}" | cut -d \' -f 2)
+    database=$(grep '$mosConfig_db =' "${joomlaconf}" | cut -d \' -f 2)
+    dbuser=$(grep '$mosConfig_user =' "${joomlaconf}" | cut -d \' -f 2)
+    password=$(grep '$mosConfig_password =' "${joomlaconf}" | cut -d \' -f 2)
+    host=$(grep '$mosConfig_host =' "${joomlaconf}" | cut -d \' -f 2)
+    prefix=$(grep '$mosConfig_dbprefix =' "${joomlaconf}" | cut -d \' -f 2)
+    versr=$(grep '$RELEASE =' "${versionfile}" | cut -d \' -f 2)
+    versd=$(grep '$DEV_LEVEL =' "${versionfile}" | cut -d \' -f 2)
+}
+
+get_joomla1517_info() {
+    sitenameclean=$(grep '$sitename =' "${joomlaconf}" | cut -d \' -f 2)
+    database=$(grep '$db =' "${joomlaconf}" | cut -d \' -f 2)
+    dbuser=$(grep '$user =' "${joomlaconf}" | cut -d \' -f 2)
+    password=$(grep '$password =' "${joomlaconf}" | cut -d \' -f 2)
+    host=$(grep '$host =' "${joomlaconf}" | cut -d \' -f 2)
+    prefix=$(grep '$dbprefix =' "${joomlaconf}" | cut -d \' -f 2)
+    versr=$(grep '$RELEASE' "${versionfile}" | cut -d \' -f 2)
+    versd=$(grep '$DEV_LEVEL' "${versionfile}" | cut -d \' -f 2)
+}
+
+get_joomla25up_info() {
+    sitenameclean=$(grep '$sitename =' "${joomlaconf}" | cut -d \' -f 2)
+    database=$(grep '$db =' "${joomlaconf}" | cut -d \' -f 2)
+    dbuser=$(grep '$user =' "${joomlaconf}" | cut -d \' -f 2)
+    password=$(grep '$password =' "${joomlaconf}" | cut -d \' -f 2)
+    host=$(grep '$host =' "${joomlaconf}" | cut -d \' -f 2)
+    prefix=$(grep '$dbprefix =' "${joomlaconf}" | cut -d \' -f 2)
+    versr=$(grep 'RELEASE =' "${versionfile}" | cut -d \' -f 2)
+    versd=$(grep 'DEV_LEVEL =' "${versionfile}" | cut -d \' -f 2)
+    verss=$(grep 'DEV_STATUS =' "${versionfile}" | cut -d \' -f 2)
+}
+
+get_joomla4up_info() {
+    sitenameclean=$(grep '$sitename =' "${joomlaconf}" | cut -d \' -f 2)
+    database=$(grep '$db =' "${joomlaconf}" | cut -d \' -f 2)
+    dbuser=$(grep '$user =' "${joomlaconf}" | cut -d \' -f 2)
+    password=$(grep '$password =' "${joomlaconf}" | cut -d \' -f 2)
+    host=$(grep '$host =' "${joomlaconf}" | cut -d \' -f 2)
+    prefix=$(grep '$dbprefix =' "${joomlaconf}" | cut -d \' -f 2)
+    versr=$(grep 'MAJOR_VERSION =' "${versionfile}" | cut -d " " -f 9 | cut -d ";" -f 1)
+    versd=$(grep 'MINOR_VERSION =' "${versionfile}" | cut -d " " -f 9 | cut -d ";" -f 1)
+    verss=$(grep 'PATCH_VERSION =' "${versionfile}" | cut -d " " -f 9 | cut -d ";" -f 1)
+}
+
+detect_joomla_version() {
+    versr="" versd="" verss="" jversion=""
+
+    if [[ -f "${versionf1017}" ]]; then
+        local release
+        release=$(grep '$RELEASE' "${versionf1017}" | cut -d \' -f 2)
+        if echo "${release}" | grep -q "1.0"; then
+            versionfile="${versionf1017}"; get_joomla10_info
+        elif echo "${release}" | grep -q "1.7"; then
+            versionfile="${versionf1017}"; get_joomla1517_info
+        fi
+    fi
+
+    if [[ -f "${versionf1516}" ]]; then
+        versionfile="${versionf1516}"; get_joomla1517_info
+    fi
+
+    if [[ -f "${versionf2537}" ]]; then
+        versionfile="${versionf2537}"; get_joomla25up_info
+    fi
+
+    if [[ -f "${versionf38plus}" ]]; then
+        if [[ -f "${version4}" ]]; then
+            versionfile="${versionf38plus}"; get_joomla4up_info
+        else
+            versionfile="${versionf38plus}"; get_joomla25up_info
+        fi
+    fi
+
+    if [[ -f "${version4}" ]]; then
+        jversion="${versr}.${versd}.${verss}"
+    else
+        jversion="${versr}.${versd}"
+    fi
+}
+
+# Scan for Joomla installations by looking for configuration.php
+find "${ROOTFOLDER}" -maxdepth 2 -name "configuration.php" -type f | sort | while read -r CONFFILE; do
+    DIR=$(dirname "${CONFFILE}")
+    cd "${DIR}" || continue
+
+    detect_joomla_version
+
+    # Skip if version detection failed
+    [[ -z "${jversion}" || "${jversion}" == "." ]] && continue
+
+    # Filter by release prefix if provided (e.g. -r 5 matches 5.2.3)
+    if [[ -n "${RELEASEVERSION}" ]] && [[ "${jversion}" != ${RELEASEVERSION}* ]]; then
+        continue
+    fi
+
+    if [[ "${SHORT}" == "yes" ]]; then
+        printf "%-50s %s\n" "${DIR}" "${jversion}"
+    else
+        printf "Sitename    : %s\n" "${sitenameclean}"
+        printf "Version     : %s\n" "${jversion}"
+        printf "DB Name     : %s\n" "${database}"
+        printf "DB User     : %s\n" "${dbuser}"
+        printf "DB Password : %s\n" "${password}"
+        printf "DB Host     : %s\n" "${host}"
+        printf "DB Prefix   : %s\n" "${prefix}"
+        printf "Path        : %s\n" "${DIR}"
+        echo ""
+    fi
+done
