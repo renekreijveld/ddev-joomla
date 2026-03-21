@@ -8,8 +8,9 @@
 #
 # Version history
 # 1.0 Initial version.
+# 1.1 Added jdelsite, jddev-update, jlistjoomlas to installed scripts.
 
-VERSION=1.0
+VERSION=1.1
 
 # Folder where scripts are installed
 SCRIPTS_DEST="/usr/local/bin"
