@@ -10,10 +10,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This project is pure Bash — no package manager, build tools, test framework, or CI/CD. Testing is manual. To validate a script change, run the script directly in a terminal with DDEV installed.
 
-## Script code
-
-When edits are done in scripts, always make sure the script can run in macOS, Windows with WLS and Linux.
-
 ## Script Installation
 
 Scripts are distributed via curl to `/usr/local/bin/` (requires sudo). The installer/updater fetch scripts from the GitHub `main` branch at runtime.
@@ -81,3 +77,4 @@ When creating a project, `addsite`:
 - Silent mode (`-s` flag) suppresses output; scripts still exit with correct codes
 - Destructive actions prompt for confirmation unless `-o` (overwrite) is passed
 - Errors print to stdout with a descriptive message and `exit 1`
+- Always make sure the script can run in macOS, Windows with WLS and Linux.
