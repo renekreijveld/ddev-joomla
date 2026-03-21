@@ -1,0 +1,115 @@
+#!/bin/bash
+
+# jdelsite -- delete a DDEV based Joomla website
+#
+# Written by René Kreijveld - email@renekreijveld.nl
+# This script is free software; you may redistribute it and/or modify it.
+# This script comes without any warranty. Use it at your own risk.
+#
+# Version history
+# 1.0 Initial version
+
+VERSION=1.0
+
+MYNAME=$(basename "${0}")
+
+CONFIG_DIR="${HOME}/.config/ddevjoomla"
+CONFIG_FILE="${CONFIG_DIR}/config"
+
+# Load configuration file defaults
+if [[ -f "${CONFIG_FILE}" ]]; then
+    source "${CONFIG_FILE}"
+else
+    echo "Error: configuration file ${CONFIG_FILE} not found, exiting."
+    exit 1
+fi
+
+# show message function
+showmessage() {
+    if [ "${SILENT}" == "no" ]; then
+        echo -e "$1"
+    fi
+}
+
+# display usage information
+usage() {
+    echo -e "\n${MYNAME} ${VERSION}, written by René Kreijveld.\n"
+    echo -e "Usage: ${MYNAME} -n <name> [-s] [-h]\n"
+    echo "-n the name of the website to delete. Required."
+    echo "-s silent, no messages will be shown (optional)."
+    echo -e "-h Help. Display this info.\n"
+    exit 0
+}
+
+SILENT="no"
+WEBSITE_NAME=""
+
+while getopts n:sh opt; do
+    case "${opt}" in
+    n)
+        WEBSITE_NAME=$OPTARG
+        ;;
+    s)
+        SILENT="yes"
+        ;;
+    h)
+        usage
+        ;;
+    \?)
+        echo "Invalid option: -$OPTARG" >&2
+        usage
+        ;;
+    :)
+        echo "Option -$OPTARG requires an argument." >&2
+        usage
+        ;;
+    esac
+done
+
+showmessage "${MYNAME} ${VERSION}"
+
+# Check if ddev is installed
+if ! command -v ddev &>/dev/null; then
+    echo "Error: ddev is not installed or not in PATH, exiting."
+    exit 1
+fi
+
+# Check if mandatory parameters are provided
+if [ -z "${WEBSITE_NAME}" ]; then
+    echo "Error: website name missing."
+    echo "Use ${MYNAME} -h to display help."
+    exit 1
+fi
+
+WEBSITE_FOLDER="${ROOTFOLDER}/${WEBSITE_NAME}"
+
+# Check if the website folder exists
+if [ ! -d "${WEBSITE_FOLDER}" ]; then
+    echo "Error: website folder ${WEBSITE_FOLDER} not found, exiting."
+    exit 1
+fi
+
+# Confirm deletion — require explicit 'yes' since this is irreversible
+echo -e "WARNING: This will permanently delete the website '${WEBSITE_NAME}' and all its data."
+echo -e "Website folder: ${WEBSITE_FOLDER}"
+read -r -p "Are you sure? Type 'yes' to confirm: " CONFIRM
+if [ "${CONFIRM}" != "yes" ]; then
+    echo "Aborted."
+    exit 0
+fi
+
+cd "${WEBSITE_FOLDER}"
+
+# Stop the DDEV project
+showmessage "Stopping DDEV project ${WEBSITE_NAME}."
+ddev stop
+
+# Delete the DDEV project (--omit-snapshot skips creating a DB snapshot, -y skips confirmation)
+showmessage "Deleting DDEV project ${WEBSITE_NAME}."
+ddev delete --omit-snapshot -y
+
+# Remove the website folder from disk
+showmessage "Removing website folder ${WEBSITE_FOLDER}."
+rm -rf "${WEBSITE_FOLDER}"
+
+showmessage "Website ${WEBSITE_NAME} has been permanently deleted."

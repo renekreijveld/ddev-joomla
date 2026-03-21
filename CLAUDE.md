@@ -44,6 +44,7 @@ Each script sources this config at startup.
 | Script | Purpose |
 |--------|---------|
 | `jaddsite` | Create a new DDEV Joomla project (PHP version, webserver, optional Joomla install) |
+| `jdelsite` | Permanently delete a DDEV Joomla project and its files |
 | `jlatest` | Download and extract the latest (or specified) Joomla release |
 | `gosite` | Interactive selector to `cd` into a Joomla site (requires shell function wrapper in `.zshrc`/`.bashrc`) |
 | `jdbdump` | Export the DDEV database (`ddev export-db`) |

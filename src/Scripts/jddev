@@ -25,6 +25,12 @@ echo -e "  -j  Download and install Joomla (optional)."
 echo -e "  -s  Silent, no messages will be shown (optional)."
 echo -e "  -h  Display help.\n"
 
+echo -e "jdelsite -- Permanently delete a DDEV Joomla website and its files."
+echo -e "  Usage: jdelsite -n <name> [-s] [-h]"
+echo -e "  -n  The name of the website to delete. Required."
+echo -e "  -s  Silent, no messages will be shown (optional)."
+echo -e "  -h  Display help.\n"
+
 echo -e "gosite -- Interactively navigate to a Joomla site folder."
 echo -e "  Usage: gosite"
 echo -e "  Note: Requires a shell wrapper function in .zshrc/.bashrc:"
