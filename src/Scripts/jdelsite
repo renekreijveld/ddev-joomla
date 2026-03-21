@@ -107,6 +107,7 @@ ddev stop
 # Delete the DDEV project (--omit-snapshot skips creating a DB snapshot, -y skips confirmation)
 showmessage "Deleting DDEV project ${WEBSITE_NAME}."
 ddev delete -O -y
+docker builder prune
 
 # Remove the website folder from disk
 showmessage "Removing website folder ${WEBSITE_FOLDER}."
