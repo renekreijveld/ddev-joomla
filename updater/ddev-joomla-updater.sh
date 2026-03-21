@@ -122,13 +122,6 @@ log_message() {
     fi
 }
 
-show_scripts_to_update() {
-    echo -e "\nScripts that will be checked for updates:"
-    for script in "${LOCAL_SCRIPTS[@]}"; do
-        echo "- ${script}"
-    done
-}
-
 # Extract the VERSION value from a script file
 get_version() {
     grep '^VERSION=' "$1" | head -1 | cut -d= -f2
@@ -143,7 +136,7 @@ is_newer() {
 }
 
 update_local_scripts() {
-    echo -e "\n\nChecking and updating local scripts:"
+    echo -e "\nChecking and updating local scripts:"
     for script in "${LOCAL_SCRIPTS[@]}"; do
         echo -n "- ${script}: "
 
@@ -245,6 +238,5 @@ log_message "Start ddev-joomla-updater ====================================="
 start
 load_configfile
 check_prerequisites
-show_scripts_to_update
 update_local_scripts
 the_end
