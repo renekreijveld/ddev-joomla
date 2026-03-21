@@ -75,7 +75,7 @@ start() {
         exit 0
     fi
 
-    read -s -p "Input your password, this is needed for installing the scripts in : " PASSWORD
+    read -s -p "Input your password, this is needed to install the scripts at ${SCRIPTS_DEST}: " PASSWORD
     echo ""
 
     # Validate the password
