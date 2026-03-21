@@ -11,9 +11,10 @@
 # 1.0 Initial version
 # 1.1 Added auto-detection of db.sql and db.sql.gz
 # 1.2 Added exit code check for ddev import-db
+# 1.3 Added -v verbose option
 
 # version
-VERSION=1.2
+VERSION=1.3
 
 
 # general variables
@@ -29,8 +30,9 @@ showmessage() {
 # Display usage information
 usage() {
     echo -e "${MYNAME} ${VERSION}, written by René Kreijveld.\n"
-    echo -e "Usage: ${MYNAME} [-f dumpfile] [-s] [-h]\n"
+    echo -e "Usage: ${MYNAME} [-f dumpfile] [-v] [-s] [-h]\n"
     echo "-f dumpfile, use the specified file instead of db.sql or db.sql.gz (optional)."
+    echo "-v verbose, show all ddev output (optional)."
     echo "-s silent, no messages will be shown (optional)."
     echo -e "-h Help. Display this info.\n"
     exit 0
@@ -38,11 +40,15 @@ usage() {
 
 # Process the arguments
 SILENT="no"
+VERBOSE="no"
 DUMPFILE=""
-while getopts "f:sh" opt; do
+while getopts "f:vsh" opt; do
     case "${opt}" in
     f)
         DUMPFILE="${OPTARG}"
+        ;;
+    v)
+        VERBOSE="yes"
         ;;
     s)
         SILENT="yes"
@@ -83,7 +89,15 @@ if [[ ! -e "${DUMPFILE}" ]]; then
 fi
 
 showmessage "Starting database import of file ${DUMPFILE}."
-if ddev import-db --file="${DUMPFILE}" >/dev/null 2>&1; then
+
+# Redirect ddev output based on -v flag
+if [ "${VERBOSE}" == "yes" ]; then
+    CMD_OUTPUT=/dev/stdout
+else
+    CMD_OUTPUT=/dev/null
+fi
+
+if ddev import-db --file="${DUMPFILE}" >"${CMD_OUTPUT}" 2>&1; then
     showmessage "Database import of ${DUMPFILE} completed successfully."
 else
     echo "Error: Database import failed."

@@ -9,8 +9,9 @@
 # Version history
 # 1.0 Initial version
 # 1.1 Added descriptions for jddev-update and fixed some formatting.
+# 1.2 Added -v verbose option to jdbdump and jdbimp descriptions.
 
-VERSION=1.1
+VERSION=1.2
 
 MYNAME=$(basename "$0")
 
@@ -45,16 +46,18 @@ echo -e "  -s  Silent, no messages will be shown (optional)."
 echo -e "  -h  Display help.\n"
 
 echo -e "jdbdump -- Export the DDEV database to a SQL dump file."
-echo -e "  Usage: jdbdump [-t] [-n] [-o] [-s] [-h]"
+echo -e "  Usage: jdbdump [-t] [-n] [-o] [-v] [-s] [-h]"
 echo -e "  -t  Add a date/time-stamp to the dump filename (optional)."
 echo -e "  -n  Do not compress the dump with gzip (optional)."
 echo -e "  -o  Overwrite existing dump file (optional)."
+echo -e "  -v  Verbose, show all ddev output (optional)."
 echo -e "  -s  Silent, no messages will be shown (optional)."
 echo -e "  -h  Display help.\n"
 
 echo -e "jdbimp -- Import a SQL dump file into the DDEV database."
-echo -e "  Usage: jdbimp [-f <dumpfile>] [-s] [-h]"
+echo -e "  Usage: jdbimp [-f <dumpfile>] [-v] [-s] [-h]"
 echo -e "  -f  Use the specified dump file instead of db.sql or db.sql.gz (optional)."
+echo -e "  -v  Verbose, show all ddev output (optional)."
 echo -e "  -s  Silent, no messages will be shown (optional)."
 echo -e "  -h  Display help.\n"
 
