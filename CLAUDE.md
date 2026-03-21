@@ -67,7 +67,7 @@ function gosite() { cd "$(command gosite "$@")"; }
 
 When creating a project, `addsite`:
 1. Creates the site directory under `ROOTFOLDER`
-2. Runs `ddev config` with `--docroot=public_html` and the specified PHP/webserver
+2. Runs `ddev config` with `--docroot=.` and the specified PHP/webserver
 3. Writes `.ddev/php/joomla.ini` (sets `display_errors`, `output_buffering`)
 4. For Nginx: appends Joomla API location block to `nginx-site.conf`
 5. Installs the Adminer DDEV add-on
