@@ -16,6 +16,22 @@ This set of scripts were written to better support Joomla local development in D
 
 You need to have a working DDEV setup on your machine. Read about how to install DDEV here: <a href="https://ddev.com/get-started/" target="_blank">ddev.com/get-started</a>.
 
+### Utility Scripts
+
+The following scripts will be installed which do the following:
+
+| Script | Purpose |
+|--------|---------|
+| `jaddsite` | Create a new DDEV Joomla project (PHP version, webserver, optional Joomla install) |
+| `jlatest` | Download and extract the latest (or specified) Joomla release |
+| `gosite` | Interactive selector to `cd` into a Joomla site (requires shell function wrapper in `.zshrc`/`.bashrc`) |
+| `jdbdump` | Export the DDEV database (`ddev export-db`) |
+| `jdbimp` | Import a database dump (`ddev import-db`) |
+| `setrights` | Set correct file permissions (644 files, 755 dirs) |
+| `jbackup` | Full site backup: database dump + compressed archive (`.tgz` or `.zip`) |
+| `jddev` | Show all available scripts and their command-line parameters |
+
+
 ### Backup & Safety
 
 The installer script automatically creates backups of all configuration files and existing scripts before making any changes.
