@@ -41,7 +41,7 @@ DEFAULT_WEBSERVER="${WEBSERVER:-nginx}"
 
 # display usage information
 usage() {
-    echo -e "${MYNAME} ${VERSION}, written by René Kreijveld.\n"
+    echo -e "${MYNAME} ${VERSION}, written by René Kreijveld. Add a new Joomla site to DDEV.\n"
     echo -e "Usage: ${MYNAME} -n <sitename> [-p <php_version>] [-w <webserver>] [-j] [-s] [-h]\n"
     echo "-n the website name for the new website (without spaces)."
     echo "-p the PHP version for the new website (optional, default: 8.4)."
@@ -100,7 +100,13 @@ while getopts "n:p:w:ijsh" opt; do
     esac
 done
 
-showmessage "${MYNAME} ${VERSION}"
+showmessage "${MYNAME} ${VERSION}, add a new Joomla site to DDEV"
+
+# Check if ddev is installed
+if ! command -v ddev &>/dev/null; then
+    echo "Error: ddev is not installed or not in PATH, exiting."
+    exit 1
+fi
 
 # Use command-line webserver if provided, otherwise use config default
 if [ -n "${WEBSERVER_OPTION}" ]; then
