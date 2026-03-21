@@ -192,9 +192,7 @@ update_local_scripts() {
 }
 
 the_end() {
-    echo -e "\n################"
-    echo "Update Summary:"
-    echo "################"
+    echo -e "\nUpdate summary:"
 
     if [[ ${#UPDATED_SCRIPTS[@]} -gt 0 ]]; then
         echo -e "\nSuccessfully updated (${#UPDATED_SCRIPTS[@]}):"
@@ -218,7 +216,7 @@ the_end() {
         log_message "All scripts are already up-to-date"
     else
         echo -e "\nUpdate completed successfully!"
-        echo -e "\nEnjoy your updated development setup!"
+        echo "Enjoy your updated DDEV support scripts for Joomla!"
     fi
 
     if [[ -n "${LOGFILE}" ]]; then
