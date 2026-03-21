@@ -21,17 +21,17 @@ You need to have a working DDEV setup on your machine. Read about how to install
 The following scripts will be installed which do the following:
 
 | Script | Purpose |
-|--------|---------|
-| `jddev-update` | Update all ddev-joomla scripts from the GitHub main branch |
+|-------------|---------|
 | `jaddsite` | Create a new DDEV Joomla project (PHP version, webserver, optional Joomla install) |
 | `jdelsite` | Permanently delete a DDEV Joomla project and its files |
 | `jlatest` | Download and extract the latest (or specified) Joomla release |
-| `gosite` | Interactive selector to `cd` into a Joomla site (requires shell function wrapper in `.zshrc`/`.bashrc`) |
 | `jdbdump` | Export the DDEV database (`ddev export-db`) |
 | `jdbimp` | Import a database dump (`ddev import-db`) |
-| `setrights` | Set correct file permissions (644 files, 755 dirs) |
 | `jbackup` | Full site backup: database dump + compressed archive (`.tgz` or `.zip`) |
+| `gosite` | Interactive selector to `cd` into a Joomla site (requires shell function wrapper in `.zshrc`/`.bashrc`) |
+| `setrights` | Set correct file permissions (644 files, 755 dirs) |
 | `jddev` | Show all available scripts and their command-line parameters |
+| `jddev-update` | Update all ddev-joomla scripts from the GitHub main branch |
 
 
 ### Backup & Safety
