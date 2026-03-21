@@ -203,13 +203,6 @@ the_end() {
         done
     fi
 
-    if [[ ${#SKIPPED_SCRIPTS[@]} -gt 0 ]]; then
-        echo -e "\nAlready up-to-date (${#SKIPPED_SCRIPTS[@]}):"
-        for script in "${SKIPPED_SCRIPTS[@]}"; do
-            echo "- ${script}"
-        done
-    fi
-
     if [[ ${#FAILED_SCRIPTS[@]} -gt 0 ]]; then
         echo -e "\nFailed to update (${#FAILED_SCRIPTS[@]}):"
         for script in "${FAILED_SCRIPTS[@]}"; do
