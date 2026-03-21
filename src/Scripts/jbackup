@@ -1,0 +1,148 @@
+#!/bin/bash
+# jbackup -- backup a Joomla website to a tar.gz or .zip file
+#
+# Written by René Kreijveld - email@renekreijveld.nl
+# This script is free software; you may redistribute it and/or modify it.
+# This script comes without any warranty. Use it at your own risk.
+#
+# Version history
+# 1.0 Initial version
+
+# version
+VERSION=1.6
+
+# general variables
+MYPATH=$(cd "$(dirname "$0")"; pwd -P)
+MYNAME=$(basename "$0")
+
+CONFIG_DIR="${HOME}/.config/ddevjoomla"
+CONFIG_FILE="${CONFIG_DIR}/config"
+
+# Load configuration file defaults
+if [[ -f "${CONFIG_FILE}" ]]; then
+    source "${CONFIG_FILE}"
+else
+    echo "Error: configuration file ${CONFIG_FILE} not found, exiting."
+    exit 1
+fi
+
+# show message function
+showmessage() {
+    if [ "${SILENT}" == "no" ]; then
+        echo -e "$1"
+    fi
+}
+
+# display usage information
+usage() {
+    echo -e "\n${MYNAME} ${VERSION}, written by René Kreijveld.\n"
+    echo -e "Usage: ${MYNAME} [-n <name>] [-z] [-t] [-o] [-s] [-h]\n"
+    echo "Default action is .tgz backup."
+    echo "-n the name for the website to backup."
+    echo "-z Zip. Backup to a zipfile instead of a tgzfile."
+    echo "-t Add a date/time-stamp to the backup file."
+    echo "-o Overwrite existing backupfile and/or database dump."
+    echo "-s silent, no messages will be shown (optional)."
+    echo -e "-h Help. Display this info.\n"
+    exit 0
+}
+
+ZIP="no"
+SILENT="no"
+OVERWRITE="no"
+TIMESTAMP="no"
+WEBSITE_NAME=""
+while getopts n:ztosh opt; do
+    case "${opt}" in
+    n)
+        WEBSITE_NAME=$OPTARG
+        ;;
+    z)
+        ZIP="yes"
+        ;;
+    t)
+        TIMESTAMP="yes"
+        ;;
+    o)
+        OVERWRITE="yes"
+        ;;
+    s)
+        SILENT="yes"
+        ;;
+    h)
+        usage
+        ;;
+    \?)
+        echo "Invalid option: -$OPTARG" >&2
+        usage
+        ;;
+    esac
+done
+
+# create date/time stamp
+if [ "${TIMESTAMP}" == "yes" ]; then
+    NOW=$(date +".%Y%m%d.%H%M%S")
+else
+    NOW=""
+fi
+
+showmessage "${MYNAME} ${VERSION}"
+
+# Check if WEBSITE_NAME is not empty
+if [ -n "${WEBSITE_NAME}" ]; then
+    WEBSITE_FOLDER="${ROOTFOLDER}/${WEBSITE_NAME}"
+    if [ ! -d "${WEBSITE_FOLDER}" ]; then
+        echo "Error: website folder ${WEBSITE_FOLDER} not found, exiting."
+        exit 1
+    fi
+    cd "${WEBSITE_FOLDER}"
+fi
+
+# Check if database dump exists
+if [ -e db.sql.gz ]; then
+    if [ "${OVERWRITE}" == "no" ]; then
+        read -p "Database dump db.sql.gz already exists. Press Enter to overwrite, or Ctrl-C to abort."
+    fi
+fi
+
+# Build backup file path
+if [ "${ZIP}" == "no" ]; then
+    BACKUPFILE="${BACKUPFOLDER}/${WEBSITE_NAME}${NOW}.tgz"
+else
+    BACKUPFILE="${BACKUPFOLDER}/${WEBSITE_NAME}${NOW}.zip"
+fi
+
+# Check if backup file exists
+if [ -e "${BACKUPFILE}" ]; then
+    if [ "${OVERWRITE}" == "no" ]; then
+        read -p "Backup ${BACKUPFILE} already exists. Press Enter to overwrite, or Ctrl-C to abort."
+    fi
+fi
+
+showmessage "Create database dump."
+ddev export-db --file=db.sql.gz >/dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "Error: database dump failed, exiting."
+    exit 1
+fi
+
+showmessage "Create backup."
+
+# create the backup (dotglob ensures hidden files/folders are included)
+shopt -s dotglob
+if [ "${ZIP}" == "no" ]; then
+    tar czf "${BACKUPFILE}" *
+else
+    zip -q -r "${BACKUPFILE}" *
+fi
+shopt -u dotglob
+
+rm -f db.sql.gz
+
+showmessage "\nYour backup is ready at ${BACKUPFILE}.\n"
+# Present restore instructions
+if [ "${ZIP}" == "no" ]; then
+    showmessage "To restore the backup, use 'tar xzf ${BACKUPFILE}'.\nRun this command in folder ${START_FOLDER}."
+else
+    showmessage "To restore the backup, use 'unzip -q -o ${BACKUPFILE}'.\nRun this command in folder ${START_FOLDER}."
+fi
