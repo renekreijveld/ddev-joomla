@@ -1,0 +1,66 @@
+#!/bin/bash
+
+# jddev -- Show all available ddev-joomla scripts and their command-line parameters
+#
+# Written by René Kreijveld - email@renekreijveld.nl
+# This script is free software; you may redistribute it and/or modify it.
+# This script comes without any warranty. Use it at your own risk.
+#
+# Version history
+# 1.0 Initial version
+
+VERSION=1.0
+
+MYNAME=$(basename "$0")
+
+echo -e "${MYNAME} ${VERSION}, written by René Kreijveld."
+echo -e "Overview of all available ddev-joomla scripts.\n"
+
+echo -e "jaddsite -- Add a new Joomla site to DDEV."
+echo -e "  Usage: jaddsite -n <sitename> [-p <php_version>] [-w <webserver>] [-j] [-s] [-h]"
+echo -e "  -n  The website name for the new website (without spaces). Required."
+echo -e "  -p  The PHP version for the new website (optional, default: 8.4)."
+echo -e "  -w  The webserver to use: nginx or apache (optional, default from config)."
+echo -e "  -j  Download and install Joomla (optional)."
+echo -e "  -s  Silent, no messages will be shown (optional)."
+echo -e "  -h  Display help.\n"
+
+echo -e "gosite -- Interactively navigate to a Joomla site folder."
+echo -e "  Usage: gosite"
+echo -e "  Note: Requires a shell wrapper function in .zshrc/.bashrc:"
+echo -e "        function gosite() { cd \"\$(command gosite \"\$@\")\"; }\n"
+
+echo -e "jbackup -- Full backup of a Joomla site (database dump + archive)."
+echo -e "  Usage: jbackup [-n <name>] [-z] [-t] [-o] [-s] [-h]"
+echo -e "  -n  The name of the website to backup (optional, defaults to current folder)."
+echo -e "  -z  Backup to a zip file instead of a tgz file (optional)."
+echo -e "  -t  Add a date/time-stamp to the backup filename (optional)."
+echo -e "  -o  Overwrite existing backup file and/or database dump (optional)."
+echo -e "  -s  Silent, no messages will be shown (optional)."
+echo -e "  -h  Display help.\n"
+
+echo -e "jdbdump -- Export the DDEV database to a SQL dump file."
+echo -e "  Usage: jdbdump [-t] [-n] [-o] [-s] [-h]"
+echo -e "  -t  Add a date/time-stamp to the dump filename (optional)."
+echo -e "  -n  Do not compress the dump with gzip (optional)."
+echo -e "  -o  Overwrite existing dump file (optional)."
+echo -e "  -s  Silent, no messages will be shown (optional)."
+echo -e "  -h  Display help.\n"
+
+echo -e "jdbimp -- Import a SQL dump file into the DDEV database."
+echo -e "  Usage: jdbimp [-f <dumpfile>] [-s] [-h]"
+echo -e "  -f  Use the specified dump file instead of db.sql or db.sql.gz (optional)."
+echo -e "  -s  Silent, no messages will be shown (optional)."
+echo -e "  -h  Display help.\n"
+
+echo -e "jlatest -- Download and extract a Joomla release into the current folder."
+echo -e "  Usage: jlatest [-v <joomla_version>] [-u] [-s] [-h]"
+echo -e "  -v  Download a specific Joomla version, e.g. 5.2.3 (optional, default: latest)."
+echo -e "  -u  Prompt for a custom download URL (optional)."
+echo -e "  -s  Silent, no messages will be shown (optional)."
+echo -e "  -h  Display help.\n"
+
+echo -e "setrights -- Set correct file (644) and folder (755) permissions recursively."
+echo -e "  Usage: setrights [-s] [-h]"
+echo -e "  -s  Silent, no messages will be shown (optional)."
+echo -e "  -h  Display help.\n"

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# latestjoomla -- Download and unzip the latest Joomla version
+# jlatest -- Download and unzip the latest Joomla version
 #
 # Written by René Kreijveld - email@renekreijveld.nl
 # This script is free software; you may redistribute it and/or modify it.

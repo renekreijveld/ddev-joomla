@@ -43,13 +43,14 @@ Each script sources this config at startup.
 
 | Script | Purpose |
 |--------|---------|
-| `addsite` | Create a new DDEV Joomla project (PHP version, webserver, optional Joomla install) |
-| `latestjoomla` | Download and extract the latest (or specified) Joomla release |
+| `jaddsite` | Create a new DDEV Joomla project (PHP version, webserver, optional Joomla install) |
+| `jlatest` | Download and extract the latest (or specified) Joomla release |
 | `gosite` | Interactive selector to `cd` into a Joomla site (requires shell function wrapper in `.zshrc`/`.bashrc`) |
 | `jdbdump` | Export the DDEV database (`ddev export-db`) |
 | `jdbimp` | Import a database dump (`ddev import-db`) |
 | `setrights` | Set correct file permissions (644 files, 755 dirs) |
 | `jbackup` | Full site backup: database dump + compressed archive (`.tgz` or `.zip`) |
+| `jddev` | Show all available scripts and their command-line parameters |
 
 ### gosite Shell Function
 
@@ -59,15 +60,15 @@ Each script sources this config at startup.
 function gosite() { cd "$(command gosite "$@")"; }
 ```
 
-### addsite — DDEV Project Setup
+### jaddsite — DDEV Project Setup
 
-When creating a project, `addsite`:
+When creating a project, `jaddsite`:
 1. Creates the site directory under `ROOTFOLDER`
 2. Runs `ddev config` with `--docroot=.` and the specified PHP/webserver
 3. Writes `.ddev/php/joomla.ini` (sets `display_errors`, `output_buffering`)
 4. For Nginx: appends Joomla API location block to `nginx-site.conf`
 5. Installs the Adminer DDEV add-on
-6. Optionally runs `latestjoomla` and the Joomla CLI installer with generated credentials
+6. Optionally runs `jlatest` and the Joomla CLI installer with generated credentials
 
 ## Coding Conventions
 

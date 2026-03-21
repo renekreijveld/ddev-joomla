@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# addsite - add a new Joomla site to DDEV
+# jaddsite - add a new Joomla site to DDEV
 #
 # Written by René Kreijveld - email@renekreijveld.nl
 # This script is free software; you may redistribute it and/or modify it.
@@ -162,7 +162,7 @@ cd "${SITE_FOLDER}"
 # Download and unzip Joomla if needed
 if [ "${JOOMLA}" == "yes" ]; then
     showmessage "Downloading and extracting latest Joomla"
-    latestjoomla -s
+    jlatest -s
 else
     echo "<!DOCTYPE html><html><head><title>Empty DDEV php ${PHP_VERSION} website</title></head><body><h1>This is an empty DDEV website running on PHP version ${PHP_VERSION}</h1></body></html>" > index.php
     chmod 644 index.php
