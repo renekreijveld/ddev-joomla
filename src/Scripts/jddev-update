@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# jddev-update -- Update all ddev-joomla scripts from the GitHub main branch
+#
+# Written by René Kreijveld - email@renekreijveld.nl
+# This script is free software; you may redistribute it and/or modify it.
+# This script comes without any warranty. Use it at your own risk.
+#
+# Version history
+# 1.0 Initial version
+
+VERSION=1.0
+
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/renekreijveld/ddev-joomla/refs/heads/main/updater/ddev-joomla-updater.sh)"

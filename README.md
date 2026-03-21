@@ -22,6 +22,7 @@ The following scripts will be installed which do the following:
 
 | Script | Purpose |
 |--------|---------|
+| `jddev-update` | Update all ddev-joomla scripts from the GitHub main branch |
 | `jaddsite` | Create a new DDEV Joomla project (PHP version, webserver, optional Joomla install) |
 | `jdelsite` | Permanently delete a DDEV Joomla project and its files |
 | `jlatest` | Download and extract the latest (or specified) Joomla release |

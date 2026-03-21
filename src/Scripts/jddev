@@ -16,6 +16,9 @@ MYNAME=$(basename "$0")
 echo -e "${MYNAME} ${VERSION}, written by René Kreijveld."
 echo -e "Overview of all available ddev-joomla scripts.\n"
 
+echo -e "jddev-update -- Update all ddev-joomla scripts from the GitHub main branch."
+echo -e "  Usage: jddev-update\n"
+
 echo -e "jaddsite -- Add a new Joomla site to DDEV."
 echo -e "  Usage: jaddsite -n <sitename> [-p <php_version>] [-w <webserver>] [-j] [-v] [-s] [-h]"
 echo -e "  -n  The website name for the new website (without spaces). Required."

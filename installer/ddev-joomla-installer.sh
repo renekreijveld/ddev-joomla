@@ -18,7 +18,7 @@ LOGFILE="${CONFIG_DIR}/ddev-joomla-install.log"
 CONFIG_FILE="${CONFIG_DIR}/config"
 
 # Local scripts to install
-LOCAL_SCRIPTS=( "jaddsite" "jdelsite" "jdbdump" "jdbimp" "jddev" "jlatest" "gosite" )
+LOCAL_SCRIPTS=( "jaddsite" "jdelsite" "jdbdump" "jdbimp" "jddev" "jddev-update" "jlatest" "gosite" )
 
 # GitHub Repo Base URL
 GITHUB_BASE="https://raw.githubusercontent.com/renekreijveld/ddev-joomla/refs/heads/main"
