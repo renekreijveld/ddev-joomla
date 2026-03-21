@@ -66,7 +66,7 @@ prompt_for_input() {
 
 start() {
     echo -e "Welcome to the DDEV support scripts for Joomla updater ${VERSION}.\n"
-    echo -e "This updater and the scripts it installs come without any warranty. Use it at your own risk."
+    echo -e "This updater and the scripts it installs come without any warranty. Use at your own risk."
     echo -e "Always backup your data and software before running the updater and use the scripts it updates.\n"
 
     read -r -p "Do you want to continue? [Y/n] " CONFIRM
