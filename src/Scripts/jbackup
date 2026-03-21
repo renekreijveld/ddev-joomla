@@ -88,7 +88,7 @@ fi
 
 showmessage "${MYNAME} ${VERSION}"
 
-# Check if WEBSITE_NAME is not empty
+# If no website name given, derive it from the current directory
 if [ -n "${WEBSITE_NAME}" ]; then
     WEBSITE_FOLDER="${ROOTFOLDER}/${WEBSITE_NAME}"
     if [ ! -d "${WEBSITE_FOLDER}" ]; then
@@ -96,7 +96,11 @@ if [ -n "${WEBSITE_NAME}" ]; then
         exit 1
     fi
     cd "${WEBSITE_FOLDER}"
+else
+    WEBSITE_NAME=$(basename "$PWD")
 fi
+
+START_FOLDER="$PWD"
 
 # Check if database dump exists
 if [ -e db.sql.gz ]; then
