@@ -9,8 +9,10 @@
 # Version history
 # 1.0 Initial version.
 # 1.1 Code improvements and bug fixes
+# 1.2 Only update scripts when GitHub version is newer than local version
+# 1.3 Removed backup of local scripts, added confirmation prompt at start
 
-VERSION=1.0
+VERSION=1.3
 
 # Folder where scripts are installed
 SCRIPTS_DEST="/usr/local/bin"
@@ -33,6 +35,7 @@ fi
 
 # Track update results
 UPDATED_SCRIPTS=()
+SKIPPED_SCRIPTS=()
 FAILED_SCRIPTS=()
 PASSWORD=""
 
@@ -65,6 +68,13 @@ start() {
     echo -e "Welcome to the DDEV support scripts for Joomla updater ${VERSION}.\n"
     echo -e "This updater and the software it installs come without any warranty. Use it at your own risk."
     echo -e "Always backup your data and software before running the updater and use the software it updates.\n"
+
+    read -r -p "Do you want to continue? [Y/n] " CONFIRM
+    if [[ "${CONFIRM}" =~ ^[nN]$ ]]; then
+        echo "Update cancelled."
+        exit 0
+    fi
+
     read -s -p "Input your password, this is needed for updating system files: " PASSWORD
     echo ""
 
@@ -113,16 +123,29 @@ log_message() {
 }
 
 show_scripts_to_update() {
-    echo -e "\nScripts that will be updated:"
+    echo -e "\nScripts that will be checked for updates:"
     for script in "${LOCAL_SCRIPTS[@]}"; do
         echo "- ${script}"
     done
 }
 
+# Extract the VERSION value from a script file
+get_version() {
+    grep '^VERSION=' "$1" | head -1 | cut -d= -f2
+}
+
+# Returns true (0) if github_ver is strictly newer than local_ver
+is_newer() {
+    local local_ver="$1"
+    local github_ver="$2"
+    [ "$github_ver" != "$local_ver" ] && \
+        [ "$(printf '%s\n' "$local_ver" "$github_ver" | sort -V | tail -1)" = "$github_ver" ]
+}
+
 update_local_scripts() {
-    echo -e "\n\nUpdating local scripts:"
+    echo -e "\n\nChecking and updating local scripts:"
     for script in "${LOCAL_SCRIPTS[@]}"; do
-        echo -n "- updating ${script}... "
+        echo -n "- ${script}: "
 
         # Download script from GitHub
         if ! curl -fsSL "${GITHUB_BASE}/src/Scripts/${script}" -o "${TMPDIR}/${script}"; then
@@ -132,16 +155,26 @@ update_local_scripts() {
             continue
         fi
 
-        # If a script already exists, backup it first
+        # Get version from GitHub download
+        GITHUB_VERSION=$(get_version "${TMPDIR}/${script}")
+
+        # Get version from locally installed script (default to 0 if not installed)
         if [[ -f "${SCRIPTS_DEST}/${script}" ]]; then
-            BACKUP_FILE="${SCRIPTS_DEST}/${script}.$(date +%Y%m%d-%H%M%S)"
-            if ! echo "${PASSWORD}" | sudo -S mv -f "${SCRIPTS_DEST}/${script}" "${BACKUP_FILE}" 2>/dev/null; then
-                echo "FAILED (backup error)"
-                FAILED_SCRIPTS+=("${script}")
-                log_message "FAILED to update ${script}: backup error"
-                continue
-            fi
+            LOCAL_VERSION=$(get_version "${SCRIPTS_DEST}/${script}")
+        else
+            LOCAL_VERSION="0"
         fi
+
+        # Skip if local version is already up-to-date
+        if ! is_newer "${LOCAL_VERSION}" "${GITHUB_VERSION}"; then
+            echo "up-to-date (${LOCAL_VERSION})"
+            SKIPPED_SCRIPTS+=("${script}")
+            log_message "${script} is up-to-date (version ${LOCAL_VERSION})"
+            rm -f "${TMPDIR}/${script}"
+            continue
+        fi
+
+        echo -n "updating ${LOCAL_VERSION} -> ${GITHUB_VERSION}... "
 
         # Move new script to destination
         if ! echo "${PASSWORD}" | sudo -S mv -f "${TMPDIR}/${script}" "${SCRIPTS_DEST}/${script}" 2>/dev/null; then
@@ -161,7 +194,7 @@ update_local_scripts() {
 
         echo "OK"
         UPDATED_SCRIPTS+=("${script}")
-        log_message "Successfully updated ${script}"
+        log_message "Successfully updated ${script} from ${LOCAL_VERSION} to ${GITHUB_VERSION}"
     done
 }
 
@@ -172,10 +205,15 @@ the_end() {
 
     if [[ ${#UPDATED_SCRIPTS[@]} -gt 0 ]]; then
         echo -e "\nSuccessfully updated (${#UPDATED_SCRIPTS[@]}):"
-
         for script in "${UPDATED_SCRIPTS[@]}"; do
             echo "✓ ${script}"
-            log_message "Successfully updated ${script}"
+        done
+    fi
+
+    if [[ ${#SKIPPED_SCRIPTS[@]} -gt 0 ]]; then
+        echo -e "\nAlready up-to-date (${#SKIPPED_SCRIPTS[@]}):"
+        for script in "${SKIPPED_SCRIPTS[@]}"; do
+            echo "- ${script}"
         done
     fi
 
@@ -190,15 +228,12 @@ the_end() {
     fi
 
     if [[ ${#UPDATED_SCRIPTS[@]} -eq 0 ]]; then
-        echo -e "\nNo scripts were updated.\n"
-            log_message "No scripts were updated"
-        exit 1
+        echo -e "\nAll scripts are already up-to-date."
+        log_message "All scripts are already up-to-date"
+    else
+        echo -e "\nUpdate completed successfully!"
+        echo -e "\nEnjoy your updated development setup!"
     fi
-
-    echo -e "\nUpdate completed successfully!"
-    echo "All updated scripts have been backed up in ${SCRIPTS_DEST}/"
-    echo "Backup files have timestamps appended to their names."
-    echo -e "\nEnjoy your updated development setup!"
 
     if [[ -n "${LOGFILE}" ]]; then
         echo -e "\nUpdate log: ${LOGFILE}\n"
@@ -211,10 +246,5 @@ start
 load_configfile
 check_prerequisites
 show_scripts_to_update
-read -r -p "Do you want to continue? [Y/n] " CONFIRM
-if [[ ! "${CONFIRM}" =~ ^[Yy]?$ ]]; then
-    echo "Update cancelled."
-    exit 0
-fi
 update_local_scripts
 the_end
