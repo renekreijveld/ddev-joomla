@@ -8,8 +8,9 @@
 #
 # Version history
 # 1.0 Initial version
+# 1.1 Added confirmation prompt before deletion, added -v verbose option, added error handling for missing website folder, added error handling for missing ddev command, added error handling for missing mandatory parameters
 
-VERSION=1.0
+VERSION=1.1
 
 MYNAME=$(basename "${0}")
 
