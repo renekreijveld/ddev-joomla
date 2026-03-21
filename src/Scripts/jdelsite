@@ -106,10 +106,11 @@ ddev stop
 
 # Delete the DDEV project (--omit-snapshot skips creating a DB snapshot, -y skips confirmation)
 showmessage "Deleting DDEV project ${WEBSITE_NAME}."
-ddev delete --omit-snapshot -y
+ddev delete -O -y
 
 # Remove the website folder from disk
 showmessage "Removing website folder ${WEBSITE_FOLDER}."
+cd "${ROOTFOLDER}"
 rm -rf "${WEBSITE_FOLDER}"
 
 showmessage "Website ${WEBSITE_NAME} has been permanently deleted."
