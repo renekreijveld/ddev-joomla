@@ -34,20 +34,25 @@ showmessage() {
 # display usage information
 usage() {
     echo -e "\n${MYNAME} ${VERSION}, written by René Kreijveld.\n"
-    echo -e "Usage: ${MYNAME} -n <name> [-s] [-h]\n"
+    echo -e "Usage: ${MYNAME} -n <name> [-v] [-s] [-h]\n"
     echo "-n the name of the website to delete. Required."
+    echo "-v verbose, show all ddev and docker output (optional)."
     echo "-s silent, no messages will be shown (optional)."
     echo -e "-h Help. Display this info.\n"
     exit 0
 }
 
 SILENT="no"
+VERBOSE="no"
 WEBSITE_NAME=""
 
-while getopts n:sh opt; do
+while getopts n:vsh opt; do
     case "${opt}" in
     n)
         WEBSITE_NAME=$OPTARG
+        ;;
+    v)
+        VERBOSE="yes"
         ;;
     s)
         SILENT="yes"
@@ -100,14 +105,21 @@ fi
 
 cd "${WEBSITE_FOLDER}"
 
+# Redirect ddev/docker output based on -v flag
+if [ "${VERBOSE}" == "yes" ]; then
+    CMD_OUTPUT=/dev/stdout
+else
+    CMD_OUTPUT=/dev/null
+fi
+
 # Stop the DDEV project
 showmessage "Stopping DDEV project ${WEBSITE_NAME}."
-ddev stop
+ddev stop >"${CMD_OUTPUT}" 2>&1
 
 # Delete the DDEV project (--omit-snapshot skips creating a DB snapshot, -y skips confirmation)
 showmessage "Deleting DDEV project ${WEBSITE_NAME}."
-ddev delete -O -y
-docker builder prune
+ddev delete -O -y >"${CMD_OUTPUT}" 2>&1
+docker builder prune >"${CMD_OUTPUT}" 2>&1
 
 # Remove the website folder from disk
 showmessage "Removing website folder ${WEBSITE_FOLDER}."

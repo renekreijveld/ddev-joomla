@@ -9,11 +9,12 @@
 # Version history
 # 1.0 Initial version
 # 1.1 Added option to specify webserver type (nginx/apache)
+# 1.2 Added -v verbose option
 
-# Variables 
+# Variables
 
 # version
-VERSION=1.1
+VERSION=1.2
 # name of this
 MYNAME=$(basename "${0}")
 
@@ -42,11 +43,12 @@ DEFAULT_WEBSERVER="${WEBSERVER:-nginx}"
 # display usage information
 usage() {
     echo -e "${MYNAME} ${VERSION}, written by René Kreijveld. Add a new Joomla site to DDEV.\n"
-    echo -e "Usage: ${MYNAME} -n <sitename> [-p <php_version>] [-w <webserver>] [-j] [-s] [-h]\n"
+    echo -e "Usage: ${MYNAME} -n <sitename> [-p <php_version>] [-w <webserver>] [-j] [-v] [-s] [-h]\n"
     echo "-n the website name for the new website (without spaces)."
     echo "-p the PHP version for the new website (optional, default: 8.4)."
     echo "-w the webserver to use, nginx or apache (optional, default: ${DEFAULT_WEBSERVER})."
     echo "-j download and install Joomla (optional)."
+    echo "-v verbose, show all ddev output (optional)."
     echo "-s silent, no messages will be shown (optional)."
     echo -e "-h display this help (optional).\n"
     exit 0
@@ -63,10 +65,11 @@ contains_spaces() {
 
 # Parse command line arguments
 SILENT="no"
+VERBOSE="no"
 JOOMLA="no"
 PHP_VERSION="8.4"
 WEBSERVER_OPTION=""
-while getopts "n:p:w:ijsh" opt; do
+while getopts "n:p:w:ijvsh" opt; do
     case ${opt} in
     n)
         WEBSITE_NAME=$OPTARG
@@ -82,6 +85,9 @@ while getopts "n:p:w:ijsh" opt; do
         ;;
     j)
         JOOMLA="yes"
+        ;;
+    v)
+        VERBOSE="yes"
         ;;
     s)
         SILENT="yes"
@@ -149,6 +155,13 @@ if [[ ! "${CONFIRM}" =~ ^[Yy]?$ ]]; then
     exit 0
 fi
 
+# Redirect ddev output based on -v flag
+if [ "${VERBOSE}" == "yes" ]; then
+    CMD_OUTPUT=/dev/stdout
+else
+    CMD_OUTPUT=/dev/null
+fi
+
 # Create the website directory and optionally add an index.php
 if [ -d "${SITE_FOLDER}" ]; then
     showmessage "Website folder ${SITE_FOLDER} already exists, using existing folder."
@@ -170,7 +183,7 @@ fi
 
 # Create DDEV config
 showmessage "Creating DDEV config"
-ddev config --project-type=php --webserver-type=${WEBSERVER}-fpm --docroot=. --php-version="${PHP_VERSION}" --upload-dirs=images
+ddev config --project-type=php --webserver-type=${WEBSERVER}-fpm --docroot=. --php-version="${PHP_VERSION}" --upload-dirs=images >"${CMD_OUTPUT}" 2>&1
 
 # Add joomla.ini
 echo "display_errors = off" > "${SITE_FOLDER}/.ddev/php/joomla.ini"
@@ -178,7 +191,7 @@ echo "output_buffering = off" >> "${SITE_FOLDER}/.ddev/php/joomla.ini"
 
 # Start DDEV
 showmessage "Starting DDEV project"
-ddev start
+ddev start >"${CMD_OUTPUT}" 2>&1
 
 # Configure based on selected webserver
 if [[ "${WEBSERVER}" == "nginx" ]]; then
@@ -201,21 +214,21 @@ if [[ "${WEBSERVER}" == "nginx" ]]; then
 fi
 
 showmessage "Restarting DDEV project"
-ddev restart
+ddev restart >"${CMD_OUTPUT}" 2>&1
 
 # Add Adminer to the project
 showmessage "Adding Adminer to the project"
-ddev add-on get ddev/ddev-adminer
+ddev add-on get ddev/ddev-adminer >"${CMD_OUTPUT}" 2>&1
 
 # Run Joomla installer if needed
 if [ "${JOOMLA}" == "yes" ]; then
     showmessage "Run Joomla installer"
     DB_PREFIX=$(cat /dev/urandom | LC_ALL=C tr -dc 'a-z' | head -c 5)
-    ddev php installation/joomla.php install --site-name="Joomla" --admin-user="Administrator" --admin-username=admin --admin-password=AdminAdmin1! --admin-email=admin@example.com --db-type=mysqli --db-encryption=0 --db-host=db --db-user=db --db-pass="db" --db-name=db --db-prefix=${DB_PREFIX}_ --public-folder=""
+    ddev php installation/joomla.php install --site-name="Joomla" --admin-user="Administrator" --admin-username=admin --admin-password=AdminAdmin1! --admin-email=admin@example.com --db-type=mysqli --db-encryption=0 --db-host=db --db-user=db --db-pass="db" --db-name=db --db-prefix=${DB_PREFIX}_ --public-folder="" >"${CMD_OUTPUT}" 2>&1
     showmessage "Joomla config set sef_rewrite to true"
-    ddev php cli/joomla.php config:set sef_rewrite=true
+    ddev php cli/joomla.php config:set sef_rewrite=true >"${CMD_OUTPUT}" 2>&1
     showmessage "Joomla config set session lifetime to 120 minutes"
-    ddev php cli/joomla.php config:set lifetime=120
+    ddev php cli/joomla.php config:set lifetime=120 >"${CMD_OUTPUT}" 2>&1
 
     # When webserver is apache, create a .htaccess
     if [[ "${WEBSERVER}" == "apache" ]]; then
@@ -234,5 +247,5 @@ if [ "${JOOMLA}" == "yes" ]; then
     echo -e "Admin password is AdminAdmin1!\n"
 fi
 
-ddev describe
+ddev describe >"${CMD_OUTPUT}" 2>&1
 echo -e "Launch your website with the command: ddev launch"
