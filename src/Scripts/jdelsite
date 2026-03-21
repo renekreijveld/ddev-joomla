@@ -9,8 +9,9 @@
 # Version history
 # 1.0 Initial version
 # 1.1 Added confirmation prompt before deletion, added -v verbose option, added error handling for missing website folder, added error handling for missing ddev command, added error handling for missing mandatory parameters
+# 1.2 Fix error Docker builder cache pruning after project deletion
 
-VERSION=1.1
+VERSION=1.2
 
 MYNAME=$(basename "${0}")
 
@@ -120,7 +121,8 @@ ddev stop >"${CMD_OUTPUT}" 2>&1
 # Delete the DDEV project (--omit-snapshot skips creating a DB snapshot, -y skips confirmation)
 showmessage "Deleting DDEV project ${WEBSITE_NAME}."
 ddev delete -O -y >"${CMD_OUTPUT}" 2>&1
-docker builder prune >"${CMD_OUTPUT}" 2>&1
+showmessage "Removing Docker builder cache."
+docker builder prune -f >"${CMD_OUTPUT}" 2>&1
 
 # Remove the website folder from disk
 showmessage "Removing website folder ${WEBSITE_FOLDER}."
