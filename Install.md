@@ -1,6 +1,6 @@
 ## Disclaimer
 
-This setup works fine on my macOS machines. Should something go wrong in your setup, check the sources I used.
+This setup works fine on my macOS machines. Should something go wrong in your setup, please let ke know.
 
 A logfile is created during installation.
 
