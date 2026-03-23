@@ -9,7 +9,8 @@
 #
 # Version history:
 # 1.0 Initial version
-# 1.2 Added -v verbose option
+# 1.1 Added -v verbose option
+# 1.2 Added check if users starts jdbdump in a DDEV project directory
 
 VERSION=1.2
 
