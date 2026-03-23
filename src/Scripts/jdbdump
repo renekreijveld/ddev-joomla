@@ -14,7 +14,6 @@
 
 VERSION=1.3
 
-MYPATH=$(cd "$(dirname "$0")"; pwd -P)
 MYNAME=$(basename "$0")
 
 SILENT="no"
