@@ -47,7 +47,7 @@ Each script sources this config at startup.
 | `jdbdump` | Export the DDEV database (`ddev export-db`) |
 | `jdbimp` | Import a database dump (`ddev import-db`) |
 | `jbackup` | Full site backup: database dump + compressed archive (`.tgz` or `.zip`) |
-| `gosite` | Interactive selector to `cd` into a Joomla site (requires shell function wrapper in `.zshrc`/`.bashrc`) |
+| `gosite` | Interactive selector to `cd` into a Joomla site (requires shell function wrapper in `.zshrc`/`.bash_profile`/`.bashrc`) |
 | `jlistjoomlas` | List all Joomla sites found under the configured root folder |
 | `setrights` | Set correct file permissions (644 files, 755 dirs) |
 | `jddev` | Show all available scripts and their command-line parameters |
@@ -55,10 +55,24 @@ Each script sources this config at startup.
 
 ### gosite Shell Function
 
-`gosite` cannot change the calling shell's directory on its own. The installer adds a wrapper function to `.zshrc`/`.bashrc`:
+`gosite` cannot change the calling shell's directory on its own. The installer adds a wrapper function to the appropriate shell RC file:
+
+- **zsh**: `~/.zshrc`
+- **bash on macOS**: `~/.bash_profile` (macOS opens new terminals as login shells, which source `.bash_profile`, not `.bashrc`)
+- **bash on Linux**: `~/.bashrc`
+
+The installed function:
 
 ```bash
-function gosite() { cd "$(command gosite "$@")"; }
+gosite() {
+    local RESULT
+    RESULT=$(command /usr/local/bin/gosite)
+    if [ $? -eq 0 ]; then
+        cd "$RESULT"
+    else
+        return 1
+    fi
+}
 ```
 
 ### jaddsite — DDEV Project Setup
