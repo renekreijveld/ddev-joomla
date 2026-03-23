@@ -13,8 +13,10 @@
 
 VERSION=2.0
 
+# Name of this script
 MYNAME=$(basename "$0")
 
+# Get DDEV Joomla configuration from ~/.config/ddevjoomla/config
 CONFIG_DIR="${HOME}/.config/ddevjoomla"
 CONFIG_FILE="${CONFIG_DIR}/config"
 

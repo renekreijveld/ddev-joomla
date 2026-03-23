@@ -11,8 +11,10 @@
 
 VERSION=1.0
 
-MYPATH=$(cd "$(dirname "$0")"; pwd -P)
+# Name of this script
 MYNAME=$(basename "$0")
+
+# Get DDEV Joomla configuration from ~/.config/ddevjoomla/config
 CONFIG_DIR="${HOME}/.config/ddevjoomla"
 CONFIG_FILE="${CONFIG_DIR}/config"
 

@@ -14,6 +14,7 @@
 
 VERSION=1.3
 
+# Name of this script
 MYNAME=$(basename "$0")
 
 echo -e "${MYNAME} ${VERSION}, written by René Kreijveld."

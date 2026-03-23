@@ -14,10 +14,9 @@
 # 1.3 Added -v verbose option
 # 1.4 Added check if users starts jdbdump in a DDEV project directory
 
-# version
 VERSION=1.4
 
-# general variables
+# Name of this script
 MYNAME=$(basename "$0")
 
 # show message function

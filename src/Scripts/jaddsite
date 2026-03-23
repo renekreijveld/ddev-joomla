@@ -12,14 +12,12 @@
 # 1.2 Added -v verbose option
 # 1.3 Added Adminer add-on installation before restarting DDEV
 
-# Variables
-
-# version
 VERSION=1.3
-# name of this
+
+# Name of this script
 MYNAME=$(basename "${0}")
 
-# root folder for websites
+# Get DDEV Joomla configuration from ~/.config/ddevjoomla/config
 CONFIG_DIR="${HOME}/.config/ddevjoomla"
 CONFIG_FILE="${CONFIG_DIR}/config"
 

@@ -14,6 +14,7 @@
 
 VERSION=1.1
 
+# Name of this script
 MYNAME=$(basename ${0})
 
 # show message function
