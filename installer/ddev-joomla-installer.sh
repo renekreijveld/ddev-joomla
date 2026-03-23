@@ -282,7 +282,11 @@ setup_shell_function() {
         RC_FILE="${HOME}/.zshrc"
         SHELL_TYPE="zsh"
     elif [[ "$SHELL" == *"bash"* ]]; then
-        RC_FILE="${HOME}/.bashrc"
+        if [[ "$(uname)" == "Darwin" ]]; then
+            RC_FILE="${HOME}/.bash_profile"
+        else
+            RC_FILE="${HOME}/.bashrc"
+        fi
         SHELL_TYPE="bash"
     else
         echo "Warning: Unsupported shell. gosite function not configured."
