@@ -9,9 +9,9 @@
 #
 # Version history:
 # 1.0 Initial version
-# 1.1 Added -v verbose option
+# 1.2 Added -v verbose option
 
-VERSION=1.1
+VERSION=1.2
 
 MYPATH=$(cd "$(dirname "$0")"; pwd -P)
 MYNAME=$(basename "$0")
@@ -70,6 +70,12 @@ while getopts "tnovsh" opt; do
 done
 
 showmessage "${MYNAME} ${VERSION}"
+
+# Check if .ddev directory file exists
+if [ ! -d ".ddev" ]; then
+    echo "Error: this directory is not a DDEV project, are you at the root of the website?" >&2
+    exit 1
+fi
 
 # Add a timestamp if requested
 if [[ "${SHOWDATE}" == "yes" ]]; then
