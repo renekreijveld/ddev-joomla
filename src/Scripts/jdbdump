@@ -19,7 +19,18 @@ VERSION=1.5
 # Name of this script
 MYNAME=$(basename "$0")
 
-SILENT="no"
+# Get DDEV Joomla configuration from ~/.config/ddevjoomla/config
+CONFIG_DIR="${HOME}/.config/ddevjoomla"
+CONFIG_FILE="${CONFIG_DIR}/config"
+
+# Load configuration file defaults
+if [[ -f "${CONFIG_FILE}" ]]; then
+    source "${CONFIG_FILE}"
+else
+    echo "Error: configuration file ${CONFIG_FILE} not found, exiting."
+    exit 1
+fi
+
 # Function to show messages (honoring silent mode)
 showmessage() {
     if [[ "${SILENT}" == "no" ]]; then
@@ -42,8 +53,9 @@ usage() {
 }
 
 # Process the arguments
+SILENT="no"
 USEBACKUPFOLDER="no"
-COMPRESS="yes"
+COMPRESS=""
 SHOWDATE="no"
 OVERWRITE="no"
 VERBOSE="no"
@@ -56,7 +68,7 @@ while getopts "btnovsh" opt; do
         SHOWDATE="yes"
         ;;
     n)
-        COMPRESS="no"
+        COMPRESS="--gzip=false"
         ;;
     o)
         OVERWRITE="yes"
@@ -95,23 +107,25 @@ else
 fi
 
 # Check for compression
-if [[ "${COMPRESS}" == "yes" ]]; then
+if [[ "${COMPRESS}" == "" ]]; then
     EXTENSION=".gz"
 else
     EXTENSION=""
 fi
 
-# Determine output filename
-if [[ -n "${DUMPFILE}" ]]; then
-    OUTFILE="${DUMPFILE}"
-else
-    OUTFILE="${WEBSITE_NAME}-db${NOW}.sql${EXTENSION}"
-fi
-
 # Check if the database dump must be stored in the backupfolder.
 # If not, the backupfile is stored in the root folder of the project
 if [[ "${USEBACKUPFOLDER}" == "yes" ]]; then
-    OUTFILE="${BACKUPFOLDER}/${OUTFILE}"
+    OUTFOLDER="${BACKUPFOLDER}/"
+else
+    OUTFOLDER=""
+fi
+
+# Determine output filename
+if [[ -n "${DUMPFILE}" ]]; then
+    OUTFILE="${OUTFOLDER}${DUMPFILE}"
+else
+    OUTFILE="${OUTFOLDER}${WEBSITE_NAME}-db${NOW}.sql${EXTENSION}"
 fi
 
 # Check if database dump exists
@@ -137,12 +151,8 @@ else
     CMD_OUTPUT=/dev/null
 fi
 
-# Check for compression
-if [[ "${COMPRESS}" == "yes" ]]; then
-    ddev export-db --file="${OUTFILE}" >"${CMD_OUTPUT}" 2>&1
-else
-    ddev export-db --gzip=false --file="${OUTFILE}" >"${CMD_OUTPUT}" 2>&1
-fi
+# Create database dump
+ddev export-db ${COMPRESS} --file="${OUTFILE}" >"${CMD_OUTPUT}" 2>&1
 
 if [[ $? -ne 0 ]]; then
     echo "Error: database dump failed." >&2
