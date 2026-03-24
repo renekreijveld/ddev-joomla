@@ -7,12 +7,14 @@
 #
 # Version history
 # 1.0 Initial version
+# 1.1 Added option to save the backup in the backupfolder
 
-VERSION=1.0
+VERSION=1.1
 
 # Name of this script
 MYNAME=$(basename "$0")
 
+# Get DDEV Joomla configuration from ~/.config/ddevjoomla/config
 CONFIG_DIR="${HOME}/.config/ddevjoomla"
 CONFIG_FILE="${CONFIG_DIR}/config"
 
@@ -34,9 +36,10 @@ showmessage() {
 # display usage information
 usage() {
     echo -e "\n${MYNAME} ${VERSION}, written by René Kreijveld.\n"
-    echo -e "Usage: ${MYNAME} [-n <name>] [-z] [-t] [-o] [-s] [-h]\n"
+    echo -e "Usage: ${MYNAME} [-n <name>] [-b] [-z] [-t] [-o] [-s] [-h]\n"
     echo "Default action is .tgz backup."
     echo "-n the name for the website to backup."
+    echo "-b Save the backup in the backup folder."
     echo "-z Zip. Backup to a zipfile instead of a tgzfile."
     echo "-t Add a date/time-stamp to the backup file."
     echo "-o Overwrite existing backupfile and/or database dump."
@@ -45,15 +48,19 @@ usage() {
     exit 0
 }
 
-ZIP="no"
-SILENT="no"
-OVERWRITE="no"
-TIMESTAMP="no"
 WEBSITE_NAME=""
-while getopts n:ztosh opt; do
+USEBACKUPFOLDER="no"
+ZIP="no"
+TIMESTAMP="no"
+OVERWRITE="no"
+SILENT="no"
+while getopts n:bztosh opt; do
     case "${opt}" in
     n)
         WEBSITE_NAME=$OPTARG
+        ;;
+    b)
+        USEBACKUPFOLDER="yes"
         ;;
     z)
         ZIP="yes"
@@ -84,6 +91,14 @@ else
     NOW=""
 fi
 
+# Check if the database dump must be stored in the backupfolder.
+# If not, the backupfile is stored in the root folder of the project
+if [[ "${USEBACKUPFOLDER}" == "yes" ]]; then
+    OUTFOLDER="${BACKUPFOLDER}/sites/"
+else
+    OUTFOLDER=""
+fi
+
 showmessage "${MYNAME} ${VERSION}"
 
 # If no website name given, derive it from the current directory
@@ -109,9 +124,9 @@ fi
 
 # Build backup file path
 if [ "${ZIP}" == "no" ]; then
-    BACKUPFILE="${BACKUPFOLDER}/${WEBSITE_NAME}${NOW}.tgz"
+    BACKUPFILE="${OUTFOLDER}${WEBSITE_NAME}${NOW}.tgz"
 else
-    BACKUPFILE="${BACKUPFOLDER}/${WEBSITE_NAME}${NOW}.zip"
+    BACKUPFILE="${OUTFOLDER}${WEBSITE_NAME}${NOW}.zip"
 fi
 
 # Check if backup file exists
