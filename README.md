@@ -29,6 +29,7 @@ The following scripts will be installed which do the following:
 | `jdelsite`      | Permanently delete a DDEV Joomla project and its files |
 | `jlatest`       | Download and extract the latest (or specified) Joomla release |
 | `jdbdump`       | Export the DDEV database (`ddev export-db`) |
+| `jdbdumpall`    | Export the DDEV database of all Joomla projects to SQL dump files |
 | `jdbimp`        | Import a database dump (`ddev import-db`) |
 | `jbackup`       | Full site backup: database dump + compressed archive (`.tgz` or `.zip`) |
 | `gosite`        | Interactive selector to `cd` into a Joomla site (requires shell function wrapper in `.zshrc`/`.bashrc`) |

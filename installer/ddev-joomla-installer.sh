@@ -9,8 +9,9 @@
 # Version history
 # 1.0 Initial version.
 # 1.1 Added jdelsite, jddev-update, jlistjoomlas to installed scripts.
+# 1.2 Added jdbdumpall to installed scripts.
 
-VERSION=1.1
+VERSION=1.2
 
 # Folder where scripts are installed
 SCRIPTS_DEST="/usr/local/bin"
@@ -19,7 +20,7 @@ LOGFILE="${CONFIG_DIR}/ddev-joomla-install.log"
 CONFIG_FILE="${CONFIG_DIR}/config"
 
 # Local scripts to install
-LOCAL_SCRIPTS=( "jaddsite" "jdelsite" "jdbdump" "jdbimp" "jddev" "jddev-update" "jlatest" "jlistjoomlas" "gosite" )
+LOCAL_SCRIPTS=( "jaddsite" "jdelsite" "jdbdump" "jdbdumpall" "jdbimp" "jddev" "jddev-update" "jlatest" "jlistjoomlas" "gosite" )
 
 # GitHub Repo Base URL
 GITHUB_BASE="https://raw.githubusercontent.com/renekreijveld/ddev-joomla/refs/heads/main"
