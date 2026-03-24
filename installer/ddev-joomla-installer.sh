@@ -10,8 +10,9 @@
 # 1.0 Initial version.
 # 1.1 Added jdelsite, jddev-update, jlistjoomlas to installed scripts.
 # 1.2 Added jdbdumpall to installed scripts.
+# 1.3 Updated folder paths for backups
 
-VERSION=1.2
+VERSION=1.3
 
 # Folder where scripts are installed
 SCRIPTS_DEST="/usr/local/bin"
@@ -208,9 +209,10 @@ test_script_path() {
 
 create_local_folders() {
     mkdir -p "${rootfolder}"
-    log_message "${rootfolder} created"
-    mkdir -p "${backupfolder}"
-    log_message "${backupfolder} created"
+    log_message "Rootfolder created"
+    mkdir -p "${backupfolder}/databases"
+    mkdir -p "${backupfolder}/sites"
+    log_message "Backupfolders created"
 }
 
 install_local_scripts() {
