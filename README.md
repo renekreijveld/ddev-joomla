@@ -10,10 +10,10 @@ This set of scripts were written to better support Joomla local development in D
 
 - Create a Joomla project and automatically download and install the latest Joomla version in it.
 - Support for the /api endpoint when you run your Joomla project on Nginx.
-- Create or import a MariaDB database dump from or to your Joomla project.
-- Create a full website backup of a Joomla project
-- Delete a Joomla project
-- List all installed Joomla projects
+- Create or import a MariaDB database dump from or to your Joomla project or dump all databases at once.
+- Create a full website backup of a Joomla project or backup all projects at once.
+- Delete a Joomla project.
+- List all installed Joomla projects.
 
 ### Requirements
 
