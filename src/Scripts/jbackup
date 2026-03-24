@@ -8,8 +8,9 @@
 # Version history
 # 1.0 Initial version
 # 1.1 Added option to save the backup in the backupfolder
+# 1.2 Added better restore intructions
 
-VERSION=1.1
+VERSION=1.2
 
 # Name of this script
 MYNAME=$(basename "$0")
@@ -91,14 +92,6 @@ else
     NOW=""
 fi
 
-# Check if the database dump must be stored in the backupfolder.
-# If not, the backupfile is stored in the root folder of the project
-if [[ "${USEBACKUPFOLDER}" == "yes" ]]; then
-    OUTFOLDER="${BACKUPFOLDER}/sites/"
-else
-    OUTFOLDER=""
-fi
-
 showmessage "${MYNAME} ${VERSION}"
 
 # If no website name given, derive it from the current directory
@@ -111,6 +104,14 @@ if [ -n "${WEBSITE_NAME}" ]; then
     cd "${WEBSITE_FOLDER}"
 else
     WEBSITE_NAME=$(basename "$PWD")
+fi
+
+# Check if the database dump must be stored in the backupfolder.
+# If not, the backupfile is stored in the root folder of the project
+if [[ "${USEBACKUPFOLDER}" == "yes" ]]; then
+    OUTFOLDER="${BACKUPFOLDER}/sites/"
+else
+    OUTFOLDER="${ROOTFOLDER}/${WEBSITE_NAME}/"
 fi
 
 START_FOLDER="$PWD"
@@ -159,7 +160,7 @@ rm -f db.sql.gz
 showmessage "\nYour backup is ready at ${BACKUPFILE}.\n"
 # Present restore instructions
 if [ "${ZIP}" == "no" ]; then
-    showmessage "To restore the backup, use 'tar xzf ${BACKUPFILE}'.\nRun this command in folder ${START_FOLDER}."
+    showmessage "To restore this backup do the following:\n\ncd ${START_FOLDER}\ntar xzf ${BACKUPFILE}"
 else
-    showmessage "To restore the backup, use 'unzip -q -o ${BACKUPFILE}'.\nRun this command in folder ${START_FOLDER}."
+    showmessage "To restore this backup do the following:\n\ncd ${START_FOLDER}\nunzip -q -o ${BACKUPFILE}"
 fi
