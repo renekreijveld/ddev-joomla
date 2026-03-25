@@ -13,7 +13,7 @@
 # 1.3 Removed backup of local scripts, added confirmation prompt at start
 # 1.4 Added jdbdumpall to updated scripts.
 
-VERSION=1.4
+VERSION=1.5
 
 # Folder where scripts are installed
 SCRIPTS_DEST="/usr/local/bin"
@@ -22,7 +22,7 @@ LOGFILE="${CONFIG_DIR}/ddev-joomla-update.log"
 CONFIG_FILE="${CONFIG_DIR}/config"
 
 # Local scripts to install
-LOCAL_SCRIPTS=( "jaddsite" "jdelsite" "jdbdump" "jdbdumpall" "jbackup" "jdbimp" "jddev" "jddev-update" "jlatest" "jlistjoomlas" "gosite" )
+LOCAL_SCRIPTS=( "jaddsite" "jdelsite" "jdbdump" "jdbdumpall" "jbackup" "jbackupall" "jdbimp" "jddev" "jddev-update" "jlatest" "jlistjoomlas" "gosite" )
 
 # GitHub Repo Base URL
 GITHUB_BASE="https://raw.githubusercontent.com/renekreijveld/ddev-joomla/refs/heads/main"

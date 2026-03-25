@@ -14,7 +14,7 @@
 # 1.4 Updated jdbimp default filename description to reflect project-name prefix.
 # 1.5 Added jdbdumpall description.
 
-VERSION=1.5
+VERSION=1.6
 
 # Name of this script
 MYNAME=$(basename "$0")
@@ -80,6 +80,13 @@ echo -e "  -b  Save the backup in the backup folder."
 echo -e "  -z  Backup to a zip file instead of a tgz file (optional)."
 echo -e "  -t  Add a date/time-stamp to the backup filename (optional)."
 echo -e "  -o  Overwrite existing backup file and/or database dump (optional)."
+echo -e "  -s  Silent, no messages will be shown (optional)."
+echo -e "  -h  Display help.\n"
+
+echo -e "jbackupall -- Full backup of all DDEV Joomla projects (database dump + archive)."
+echo -e "  Usage: jbackupall [-z] [-t] [-s] [-h]"
+echo -e "  -z  Backup to zip files instead of tgz files (optional)."
+echo -e "  -t  Add a date/time-stamp to the backup filenames (optional)."
 echo -e "  -s  Silent, no messages will be shown (optional)."
 echo -e "  -h  Display help.\n"
 
