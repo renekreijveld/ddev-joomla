@@ -9,8 +9,9 @@
 #
 # Version history:
 # 1.0 Initial version
+# 1.1 Display folder name where backups are stored.
 
-VERSION=1.0
+VERSION=1.1
 
 # Name of this script
 MYNAME=$(basename "$0")
@@ -80,7 +81,8 @@ while read -r CONFFILE; do
     WEBSITE_NAME=$(basename "$PWD")
 
     # Create full backup
+    showmessage "Starting backup for project ${WEBSITE_NAME}."
     /usr/local/bin/jbackup -b ${ZIP} ${TIMESTAMP} -s < /dev/null
-    showmessage "Backup created for project ${WEBSITE_NAME}."
+    showmessage "Backup ready."
 done < <(find "${ROOTFOLDER}" -maxdepth 2 -name "configuration.php" -type f | sort)
-showmessage "All backups are ready in folder ${BACKUPFOLDER}."
+showmessage "All backups are ready in folder ${BACKUPFOLDER}/sites."
