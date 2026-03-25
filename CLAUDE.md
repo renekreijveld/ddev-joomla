@@ -6,6 +6,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **ddev-joomla** is a collection of Bash scripts that enhance Joomla development workflows within [DDEV](https://ddev.com/), a Docker-based PHP development environment. The scripts automate creating, managing, and backing up Joomla installations.
 
+## Coding Conventions
+
+- All scripts start with `#!/bin/bash`
+- Version tracked in a `VERSION` variable near the top
+- Config is loaded via `source ~/.config/ddevjoomla/config`
+- Silent mode (`-s` flag) suppresses output; scripts still exit with correct codes
+- Destructive actions prompt for confirmation unless `-o` (overwrite) is passed
+- Errors print to stdout with a descriptive message and `exit 1`
+- Always make sure the script can run in macOS, Windows with WLS and Linux.
+- When a script is added, updated or deleted, also update the following scripts: `ddev-joomla-installer.sh`, `ddev-joomla-updater.sh`, `jddev` and the `README.md` and `CLAUDE.md` files.
+
 ## No Build or Test System
 
 This project is pure Bash — no package manager, build tools, test framework, or CI/CD. Testing is manual. To validate a script change, run the script directly in a terminal with DDEV installed.
@@ -87,12 +98,3 @@ When creating a project, `jaddsite`:
 5. Installs the Adminer DDEV add-on
 6. Optionally runs `jlatest` and the Joomla CLI installer with generated credentials
 
-## Coding Conventions
-
-- All scripts start with `#!/bin/bash`
-- Version tracked in a `VERSION` variable near the top
-- Config is loaded via `source ~/.config/ddevjoomla/config`
-- Silent mode (`-s` flag) suppresses output; scripts still exit with correct codes
-- Destructive actions prompt for confirmation unless `-o` (overwrite) is passed
-- Errors print to stdout with a descriptive message and `exit 1`
-- Always make sure the script can run in macOS, Windows with WLS and Linux.
