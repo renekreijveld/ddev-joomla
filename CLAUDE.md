@@ -17,9 +17,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Always make sure the script can run in macOS, Windows with WLS and Linux.
 - When a script is added, updated or deleted, also update the following scripts: `ddev-joomla-installer.sh`, `ddev-joomla-updater.sh`, `jddev` and the `README.md` and `CLAUDE.md` files.
 
-## No Build or Test System
+## CI/CD
 
-This project is pure Bash — no package manager, build tools, test framework, or CI/CD. Testing is manual. To validate a script change, run the script directly in a terminal with DDEV installed.
+A ShellCheck workflow runs automatically on every push and pull request via GitHub Actions (`.github/workflows/shellcheck.yml`). It lints all scripts in `src/Scripts/` as well as `installer/ddev-joomla-installer.sh` and `updater/ddev-joomla-updater.sh`. All scripts must pass ShellCheck before merging.
+
+To run ShellCheck locally before pushing:
+
+```bash
+shellcheck src/Scripts/* installer/ddev-joomla-installer.sh updater/ddev-joomla-updater.sh
+```
+
+There is no package manager, build tools, or test framework. Functional testing is manual — run the script directly in a terminal with DDEV installed.
 
 ## Script Installation
 
