@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - All scripts start with `#!/bin/bash`
 - Version tracked in a `VERSION` variable near the top
-- Config is loaded via `source ~/.config/ddevjoomla/config`
+- Config is loaded via `source "${CONFIG_FILE}"`
 - Silent mode (`-s` flag) suppresses output; scripts still exit with correct codes
 - Destructive actions prompt for confirmation unless `-o` (overwrite) is passed
 - Errors print to stdout with a descriptive message and `exit 1`
@@ -105,4 +105,3 @@ When creating a project, `jaddsite`:
 4. For Nginx: appends Joomla API location block to `nginx-site.conf`
 5. Installs the Adminer DDEV add-on
 6. Optionally runs `jlatest` and the Joomla CLI installer with generated credentials
-
