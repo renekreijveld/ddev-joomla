@@ -14,7 +14,7 @@
 # 1.4 Updated jdbimp default filename description to reflect project-name prefix.
 # 1.5 Added jdbdumpall description.
 
-VERSION=1.6
+VERSION=1.5
 
 # Name of this script
 MYNAME=$(basename "$0")
