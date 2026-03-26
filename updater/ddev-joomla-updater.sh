@@ -12,8 +12,9 @@
 # 1.2 Only update scripts when GitHub version is newer than local version
 # 1.3 Removed backup of local scripts, added confirmation prompt at start
 # 1.4 Added jdbdumpall to updated scripts.
+# 1.6 ShellCheck fixes
 
-VERSION=1.5
+VERSION=1.6
 
 # Folder where scripts are installed
 SCRIPTS_DEST="/usr/local/bin"
@@ -53,13 +54,13 @@ prompt_for_input() {
     local new_value
 
     if [[ -n "$current_value" ]]; then
-        read -p "$prompt_message [$current_value]: " new_value
+        read -r -p "$prompt_message [$current_value]: " new_value
         # If the user input is empty, keep the current value
         if [[ -z "$new_value" ]]; then
             new_value="$current_value"
         fi
     else
-        read -p "$prompt_message: " new_value
+        read -r -p "$prompt_message: " new_value
     fi
 
     echo "$new_value"
@@ -76,7 +77,7 @@ start() {
         exit 0
     fi
 
-    read -s -p "Input your password, this is needed to install the scripts at ${SCRIPTS_DEST}: " PASSWORD
+    read -r -s -p "Input your password, this is needed to install the scripts at ${SCRIPTS_DEST}: " PASSWORD
     echo ""
 
     # Validate the password
@@ -94,6 +95,7 @@ start() {
 # Load configuration file defaults
 load_configfile() {
     if [[ -f "${CONFIG_FILE}" ]]; then
+        # shellcheck source=/dev/null
         source "${CONFIG_FILE}"
     else
         echo "Error: configuration file ${CONFIG_FILE} not found, exiting."

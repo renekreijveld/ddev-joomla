@@ -9,8 +9,10 @@
 # Version history:
 # 1.0 Initial version
 # 1.1 Deleted unneeded variable MYNAME
+# 1.2 ShellCheck fixes
 
-VERSION=1.1
+# shellcheck disable=SC2034
+VERSION=1.2
 
 # Get DDEV Joomla configuration from ~/.config/ddevjoomla/config
 CONFIG_DIR="${HOME}/.config/ddevjoomla"
@@ -23,6 +25,7 @@ if [ ! -f "${CONFIG_FILE}" ]; then
     exit 1
 fi
 
+# shellcheck source=/dev/null
 source "${CONFIG_FILE}"
 
 # show message function
@@ -46,18 +49,21 @@ if [[ ${#JOOMLA_SITES[@]} -eq 0 ]]; then
 fi
 
 # Sort the array alphabetically
-JOOMLA_SITES=($(printf '%s\n' "${JOOMLA_SITES[@]}" | sort))
+SORTED_SITES=()
+while IFS= read -r line; do
+    SORTED_SITES+=("$line")
+done < <(printf '%s\n' "${JOOMLA_SITES[@]}" | sort)
+JOOMLA_SITES=("${SORTED_SITES[@]}")
 
 # Display the list of Joomla sites
 showmessage "\nFound ${#JOOMLA_SITES[@]} Joomla website(s):\n"
 for i in "${!JOOMLA_SITES[@]}"; do
-    SITE_NAME=$(basename "${JOOMLA_SITES[$i]}")
     printf "%2d) %s\n" $((i+1)) "${JOOMLA_SITES[$i]}" >&2
 done
 
 # Ask user to select a site
 echo >&2
-read -p "Select a site to navigate to (1-${#JOOMLA_SITES[@]}): " SELECTION >&2
+read -r -p "Select a site to navigate to (1-${#JOOMLA_SITES[@]}): " SELECTION >&2
 
 # Validate selection
 if ! [[ "$SELECTION" =~ ^[0-9]+$ ]] || [[ "$SELECTION" -lt 1 ]] || [[ "$SELECTION" -gt ${#JOOMLA_SITES[@]} ]]; then

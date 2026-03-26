@@ -11,11 +11,12 @@
 # Version history
 # 1.0 Initial version
 # 1.1 Code optimisation, runs much faster now
+# 1.2 ShellCheck fixes
 
-VERSION=1.1
+VERSION=1.2
 
 # Name of this script
-MYNAME=$(basename ${0})
+MYNAME=$(basename "${0}")
 
 # show message function
 showmessage() {

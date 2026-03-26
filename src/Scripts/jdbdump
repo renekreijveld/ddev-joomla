@@ -13,8 +13,9 @@
 # 1.3 Added check if users starts jdbdump in a DDEV project directory
 # 1.4 Add project name to dump filename if not specified in config
 # 1.5 Added option to save the database dump in the backupfolder
+# 1.6 ShellCheck fixes
 
-VERSION=1.5
+VERSION=1.6
 
 # Name of this script
 MYNAME=$(basename "$0")
@@ -25,6 +26,7 @@ CONFIG_FILE="${CONFIG_DIR}/config"
 
 # Load configuration file defaults
 if [[ -f "${CONFIG_FILE}" ]]; then
+    # shellcheck source=/dev/null
     source "${CONFIG_FILE}"
 else
     echo "Error: configuration file ${CONFIG_FILE} not found, exiting."
@@ -152,9 +154,10 @@ else
 fi
 
 # Create database dump
-ddev export-db ${COMPRESS} --file="${OUTFILE}" >"${CMD_OUTPUT}" 2>&1
-
-if [[ $? -ne 0 ]]; then
+EXPORT_CMD=(ddev export-db)
+[[ -n "${COMPRESS}" ]] && EXPORT_CMD+=("${COMPRESS}")
+EXPORT_CMD+=(--file="${OUTFILE}")
+if ! "${EXPORT_CMD[@]}" >"${CMD_OUTPUT}" 2>&1; then
     echo "Error: database dump failed." >&2
     exit 1
 fi

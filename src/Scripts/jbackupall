@@ -10,8 +10,9 @@
 # Version history:
 # 1.0 Initial version
 # 1.1 Display folder name where backups are stored.
+# 1.2 ShellCheck fixes
 
-VERSION=1.1
+VERSION=1.2
 
 # Name of this script
 MYNAME=$(basename "$0")
@@ -22,6 +23,7 @@ CONFIG_FILE="${CONFIG_DIR}/config"
 
 # Load configuration file defaults
 if [[ -f "${CONFIG_FILE}" ]]; then
+    # shellcheck source=/dev/null
     source "${CONFIG_FILE}"
 else
     echo "Error: configuration file ${CONFIG_FILE} not found, exiting."
@@ -82,7 +84,10 @@ while read -r CONFFILE; do
 
     # Create full backup
     showmessage "Starting backup for project ${WEBSITE_NAME}."
-    /usr/local/bin/jbackup -b ${ZIP} ${TIMESTAMP} -s < /dev/null
+    JBACKUP_ARGS=(-b -s)
+    [[ -n "${ZIP}" ]] && JBACKUP_ARGS+=("${ZIP}")
+    [[ -n "${TIMESTAMP}" ]] && JBACKUP_ARGS+=("${TIMESTAMP}")
+    /usr/local/bin/jbackup "${JBACKUP_ARGS[@]}" < /dev/null
     showmessage "Backup ready."
 done < <(find "${ROOTFOLDER}" -maxdepth 2 -name "configuration.php" -type f | sort)
 showmessage "All backups are ready in folder ${BACKUPFOLDER}/sites."

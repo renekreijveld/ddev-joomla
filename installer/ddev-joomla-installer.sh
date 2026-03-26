@@ -11,8 +11,9 @@
 # 1.1 Added jdelsite, jddev-update, jlistjoomlas to installed scripts.
 # 1.2 Added jdbdumpall to installed scripts.
 # 1.3 Updated folder paths for backups
+# 1.5 ShellCheck fixes
 
-VERSION=1.4
+VERSION=1.5
 
 # Folder where scripts are installed
 SCRIPTS_DEST="/usr/local/bin"
@@ -25,9 +26,6 @@ LOCAL_SCRIPTS=( "jaddsite" "jdelsite" "jdbdump" "jdbdumpall" "jbackup" "jbackupa
 
 # GitHub Repo Base URL
 GITHUB_BASE="https://raw.githubusercontent.com/renekreijveld/ddev-joomla/refs/heads/main"
-
-# Logged-in User
-USERNAME=$(whoami)
 
 EXISTING_PATHS=()
 
@@ -44,13 +42,13 @@ prompt_for_input() {
     local new_value
 
     if [[ -n "$current_value" ]]; then
-        read -p "$prompt_message [$current_value]: " new_value
+        read -r -p "$prompt_message [$current_value]: " new_value
         # If the user input is empty, keep the current value
         if [[ -z "$new_value" ]]; then
             new_value="$current_value"
         fi
     else
-        read -p "$prompt_message: " new_value
+        read -r -p "$prompt_message: " new_value
     fi
 
     echo "$new_value"
@@ -79,7 +77,7 @@ start() {
     echo "Installation output will be logged in the file ${LOGFILE}."
     echo -e "Check this file if you encounter any issues during installation.\n"
     echo -e "This installer and the software it installs come without any warranty. Use it at your own risk.\nAlways backup your data and software before running the installer.\n"
-    read -p "Press Enter to continue, or press Ctrl-C to abort. "
+    read -r -p "Press Enter to continue, or press Ctrl-C to abort. "
 }
 
 # Function to check if a script is already installed
@@ -107,7 +105,7 @@ prechecks() {
             log_message "- ${script}"
         done
         echo -e "\nThe installer will create backups of these scripts.\n"
-        read -p "Press Enter to start the installation, or press Ctrl-C to abort. "
+        read -r -p "Press Enter to start the installation, or press Ctrl-C to abort. "
     else
         echo "None of the scripts were already installed. Proceeding."
         log_message "No previous installed scripts found"
@@ -149,7 +147,7 @@ ask_defaults() {
 
     echo -e "You will now be asked for your password, which is needed for the installation of the scripts."
     echo -e "Your password will not be stored in a file, it is only used for the installation.\n"
-    read -s -p "Your password: " PASSWORD
+    read -r -s -p "Your password: " PASSWORD
 
     # Validate the password
     if ! echo "${PASSWORD}" | sudo -S -v 2>/dev/null; then
@@ -160,12 +158,14 @@ ask_defaults() {
 
     # Write the values to the config file
     NOW=$(date +"%Y-%m-%d %H:%M:%S")
-    echo "# Configuration file for php development environment" > "${CONFIG_FILE}"
-    echo "# Generated at ${NOW}" >> "${CONFIG_FILE}"
-    echo "ROOTFOLDER=${rootfolder}" >> "${CONFIG_FILE}"
-    echo "BACKUPFOLDER=${backupfolder}" >> "${CONFIG_FILE}"
-    echo "WEBSERVER=${webserver}" >> "${CONFIG_FILE}"
-    echo "INSTALLER_VERSION=${VERSION}" >> "${CONFIG_FILE}"
+    {
+        echo "# Configuration file for php development environment"
+        echo "# Generated at ${NOW}"
+        echo "ROOTFOLDER=${rootfolder}"
+        echo "BACKUPFOLDER=${backupfolder}"
+        echo "WEBSERVER=${webserver}"
+        echo "INSTALLER_VERSION=${VERSION}"
+    } > "${CONFIG_FILE}"
     log_message "Generated config file ${CONFIG_FILE}"
 }
 
@@ -200,8 +200,10 @@ check_scripts_dest() {
 
 test_script_path() {
     local script_path="$1"
-    local script_name=$(basename "${script_path}")
-    local current_path=$(which "${script_name}")
+    local script_name
+    script_name=$(basename "${script_path}")
+    local current_path
+    current_path=$(which "${script_name}")
     if [ "${current_path}" != "${script_path}" ]; then
         EXISTING_PATHS+=("${current_path}")
     fi
@@ -305,6 +307,7 @@ setup_shell_function() {
     fi
 
     # Add the function to the RC file using printf
+    # shellcheck disable=SC2016
     if printf '\n# gosite function - enables cd to Joomla site with gosite command\ngosite() {\n    local RESULT\n    RESULT=$(command /usr/local/bin/gosite)\n    if [ $? -eq 0 ]; then\n        cd "$RESULT"\n    else\n        return 1\n    fi\n}\n' >> "${RC_FILE}"; then
         echo -e "\nAdded gosite function to ${RC_FILE}"
         log_message "Added gosite function to ${RC_FILE}"
@@ -329,6 +332,7 @@ create_config
 start
 prechecks
 ask_defaults
+# shellcheck source=/dev/null
 source "${CONFIG_FILE}"
 check_scripts_dest
 create_local_folders

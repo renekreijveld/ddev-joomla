@@ -10,8 +10,9 @@
 # Version history:
 # 1.0 Initial version
 # 2.0 Combined with jfunctions, fixed version display, fixed bugs
+# 2.1 ShellCheck fixes
 
-VERSION=2.0
+VERSION=2.1
 
 # Name of this script
 MYNAME=$(basename "$0")
@@ -22,6 +23,7 @@ CONFIG_FILE="${CONFIG_DIR}/config"
 
 # Load configuration file defaults
 if [[ -f "${CONFIG_FILE}" ]]; then
+    # shellcheck source=/dev/null
     source "${CONFIG_FILE}"
 else
     echo "Error: configuration file ${CONFIG_FILE} not found, exiting."
@@ -63,33 +65,55 @@ versionf38plus="./libraries/src/Version.php"
 version4="./includes/app.php"
 
 get_joomla10_info() {
+    # shellcheck disable=SC2016
     sitenameclean=$(grep '$mosConfig_sitename =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
     database=$(grep '$mosConfig_db =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
     dbuser=$(grep '$mosConfig_user =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
     password=$(grep '$mosConfig_password =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
     host=$(grep '$mosConfig_host =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
     prefix=$(grep '$mosConfig_dbprefix =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
     versr=$(grep '$RELEASE =' "${versionfile}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
     versd=$(grep '$DEV_LEVEL =' "${versionfile}" | cut -d \' -f 2)
 }
 
 get_joomla1517_info() {
+    # shellcheck disable=SC2016
     sitenameclean=$(grep '$sitename =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
     database=$(grep '$db =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
     dbuser=$(grep '$user =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
     password=$(grep '$password =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
     host=$(grep '$host =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
     prefix=$(grep '$dbprefix =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
     versr=$(grep '$RELEASE' "${versionfile}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
     versd=$(grep '$DEV_LEVEL' "${versionfile}" | cut -d \' -f 2)
 }
 
 get_joomla25up_info() {
+    # shellcheck disable=SC2016
     sitenameclean=$(grep '$sitename =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
     database=$(grep '$db =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
     dbuser=$(grep '$user =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
     password=$(grep '$password =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
     host=$(grep '$host =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
     prefix=$(grep '$dbprefix =' "${joomlaconf}" | cut -d \' -f 2)
     versr=$(grep 'RELEASE =' "${versionfile}" | cut -d \' -f 2)
     versd=$(grep 'DEV_LEVEL =' "${versionfile}" | cut -d \' -f 2)
@@ -97,11 +121,17 @@ get_joomla25up_info() {
 }
 
 get_joomla4up_info() {
+    # shellcheck disable=SC2016
     sitenameclean=$(grep '$sitename =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
     database=$(grep '$db =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
     dbuser=$(grep '$user =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
     password=$(grep '$password =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
     host=$(grep '$host =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
     prefix=$(grep '$dbprefix =' "${joomlaconf}" | cut -d \' -f 2)
     versr=$(grep 'MAJOR_VERSION =' "${versionfile}" | cut -d " " -f 9 | cut -d ";" -f 1)
     versd=$(grep 'MINOR_VERSION =' "${versionfile}" | cut -d " " -f 9 | cut -d ";" -f 1)
@@ -113,6 +143,7 @@ detect_joomla_version() {
 
     if [[ -f "${versionf1017}" ]]; then
         local release
+        # shellcheck disable=SC2016
         release=$(grep '$RELEASE' "${versionf1017}" | cut -d \' -f 2)
         if echo "${release}" | grep -q "1.0"; then
             versionfile="${versionf1017}"; get_joomla10_info
