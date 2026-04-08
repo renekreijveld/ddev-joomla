@@ -1,0 +1,53 @@
+#!/bin/bash
+
+# jxdb -- Show and set the status of xdebug
+#
+# Written by René Kreijveld - email@renekreijveld.nl
+# This script is free software; you may redistribute it and/or modify it.
+# This script comes without any warranty. Use it at your own risk.
+#
+# Version history:
+# 1.0 Initial version
+# 1.1 Added check to test if jxdb is run at the root of a project
+
+# shellcheck disable=SC2034
+VERSION=1.1
+
+# Check if .ddev directory exists
+if [ ! -d ".ddev" ]; then
+    echo "Error: this directory is not a DDEV project, are you at the root of the website?" >&2
+    exit 1
+fi
+
+# Check command line parameter
+ACTION=""
+if [ $# -gt 0 ]; then
+    case "${1,,}" in
+        on)
+            ACTION="on"
+            ;;
+        off)
+            ACTION="off"
+            ;;
+        *)
+            echo "Usage: jxdb [on|off]"
+            echo "  no parameter: show current xdebug status"
+            echo "  on:           enable xdebug"
+            echo "  off:          disable xdebug"
+            exit 1
+            ;;
+    esac
+fi
+
+# Execute the appropriate ddev xdebug command
+case "${ACTION}" in
+    "")
+        ddev xdebug status
+        ;;
+    on)
+        ddev xdebug enable
+        ;;
+    off)
+        ddev xdebug disable
+        ;;
+esac

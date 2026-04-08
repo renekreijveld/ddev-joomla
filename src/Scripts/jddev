@@ -13,8 +13,9 @@
 # 1.3 Added jlistjoomlas description.
 # 1.4 Updated jdbimp default filename description to reflect project-name prefix.
 # 1.5 Added jdbdumpall description.
+# 1.6 Added jxdb description.
 
-VERSION=1.5
+VERSION=1.6
 
 # Name of this script
 MYNAME=$(basename "$0")
@@ -89,6 +90,12 @@ echo -e "  -z  Backup to zip files instead of tgz files (optional)."
 echo -e "  -t  Add a date/time-stamp to the backup filenames (optional)."
 echo -e "  -s  Silent, no messages will be shown (optional)."
 echo -e "  -h  Display help.\n"
+
+echo -e "jxdb -- Displays xdebug status and enables or disables xdebug."
+echo -e "  Usage: jxdb [on|off]"
+echo -e "  on  Enables xdebug."
+echo -e "  off Disables xdebug"
+echo -e "  Without a parameter jxdb shows the xdebug status.\n"
 
 echo -e "jlistjoomlas -- List all Joomla sites found under the configured root folder."
 echo -e "  Usage: jlistjoomlas [-s] [-r <release>] [-h]"
