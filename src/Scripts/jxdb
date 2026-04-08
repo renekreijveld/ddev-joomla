@@ -22,11 +22,11 @@ fi
 # Check command line parameter
 ACTION=""
 if [ $# -gt 0 ]; then
-    case "${1,,}" in
-        on)
+    case "$1" in
+        on|ON|On)
             ACTION="on"
             ;;
-        off)
+        off|OFF|Off)
             ACTION="off"
             ;;
         *)
