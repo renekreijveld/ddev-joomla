@@ -9,13 +9,14 @@
 # Version history:
 # 1.0 Initial version
 # 1.1 Added check to test if jxdb is run at the root of a project
+# 1.2 Changed check to test if a configuration.php is present
 
 # shellcheck disable=SC2034
-VERSION=1.1
+VERSION=1.2
 
 # Check if .ddev directory exists
-if [ ! -d ".ddev" ]; then
-    echo "Error: this directory is not a DDEV project, are you at the root of the website?" >&2
+if [ ! -f "configuration.php" ]; then
+    echo -e "Error: this directory is not a Joomla project, are you at the root of the website?\nUse the gosite command to go to the root of a project." >&2
     exit 1
 fi
 
