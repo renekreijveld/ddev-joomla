@@ -14,8 +14,9 @@
 # 1.3 Added -v verbose option
 # 1.4 Added check if users starts jdbdump in a DDEV project directory
 # 1.5 Add project name to dump filename if not specified in config
+# 1.6 Delete initial mention of name and version
 
-VERSION=1.5
+VERSION=1.6
 
 # Name of this script
 MYNAME=$(basename "$0")
@@ -62,8 +63,6 @@ while getopts "f:vsh" opt; do
         ;;
     esac
 done
-
-showmessage "${MYNAME} ${VERSION}"
 
 # Check if .ddev directory file exists
 if [ ! -d ".ddev" ]; then

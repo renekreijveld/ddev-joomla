@@ -11,8 +11,9 @@
 # 1.0 Initial version
 # 1.1 Display folder name where database dumps are stored.
 # 1.2 ShellCheck fixes
+# 1.3 Delete initial mention of name and version
 
-VERSION=1.2
+VERSION=1.3
 
 # Name of this script
 MYNAME=$(basename "$0")
@@ -72,8 +73,6 @@ while getopts "nvsh" opt; do
         ;;
     esac
 done
-
-showmessage "${MYNAME} ${VERSION}"
 
 # Scan for Joomla installations by looking for configuration.php
 while read -r CONFFILE; do

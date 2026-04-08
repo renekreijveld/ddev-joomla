@@ -12,8 +12,9 @@
 # 1.2 Added -v verbose option
 # 1.3 Added Adminer add-on installation before restarting DDEV
 # 1.4 ShellCheck fixes
+# 1.5 Delete initial mention of name and version
 
-VERSION=1.4
+VERSION=1.5
 
 # Name of this script
 MYNAME=$(basename "${0}")
@@ -103,8 +104,6 @@ while getopts "n:p:w:jvsh" opt; do
         ;;
     esac
 done
-
-showmessage "${MYNAME} ${VERSION}, add a new Joomla site to DDEV"
 
 # Check if ddev is installed
 if ! command -v ddev &>/dev/null; then

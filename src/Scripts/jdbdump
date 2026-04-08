@@ -14,8 +14,9 @@
 # 1.4 Add project name to dump filename if not specified in config
 # 1.5 Added option to save the database dump in the backupfolder
 # 1.6 ShellCheck fixes
+# 1.7 Delete initial mention of name and version
 
-VERSION=1.6
+VERSION=1.7
 
 # Name of this script
 MYNAME=$(basename "$0")
@@ -90,8 +91,6 @@ while getopts "btnovsh" opt; do
         ;;
     esac
 done
-
-showmessage "${MYNAME} ${VERSION}"
 
 # Check if .ddev directory file exists
 if [ ! -d ".ddev" ]; then

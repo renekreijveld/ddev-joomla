@@ -11,8 +11,9 @@
 # 1.1 Added confirmation prompt before deletion, added -v verbose option, added error handling for missing website folder, added error handling for missing ddev command, added error handling for missing mandatory parameters
 # 1.2 Fix error Docker builder cache pruning after project deletion
 # 1.3 ShellCheck fixes
+# 1.4 Delete initial mention of name and version
 
-VERSION=1.3
+VERSION=1.4
 
 # Name of this script
 MYNAME=$(basename "${0}")
@@ -76,8 +77,6 @@ while getopts n:vsh opt; do
         ;;
     esac
 done
-
-showmessage "${MYNAME} ${VERSION}"
 
 # Check if ddev is installed
 if ! command -v ddev &>/dev/null; then
