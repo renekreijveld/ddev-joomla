@@ -9,6 +9,7 @@
 # Version history:
 # 1.0 Initial version
 
+# shellcheck disable=SC2034
 VERSION=1.0
 
 # --- Joomla version detection ---
@@ -24,16 +25,6 @@ get_joomla10_info() {
     # shellcheck disable=SC2016
     sitenameclean=$(grep '$mosConfig_sitename =' "${joomlaconf}" | cut -d \' -f 2)
     # shellcheck disable=SC2016
-    database=$(grep '$mosConfig_db =' "${joomlaconf}" | cut -d \' -f 2)
-    # shellcheck disable=SC2016
-    dbuser=$(grep '$mosConfig_user =' "${joomlaconf}" | cut -d \' -f 2)
-    # shellcheck disable=SC2016
-    password=$(grep '$mosConfig_password =' "${joomlaconf}" | cut -d \' -f 2)
-    # shellcheck disable=SC2016
-    host=$(grep '$mosConfig_host =' "${joomlaconf}" | cut -d \' -f 2)
-    # shellcheck disable=SC2016
-    prefix=$(grep '$mosConfig_dbprefix =' "${joomlaconf}" | cut -d \' -f 2)
-    # shellcheck disable=SC2016
     versr=$(grep '$RELEASE =' "${versionfile}" | cut -d \' -f 2)
     # shellcheck disable=SC2016
     versd=$(grep '$DEV_LEVEL =' "${versionfile}" | cut -d \' -f 2)
@@ -42,16 +33,6 @@ get_joomla10_info() {
 get_joomla1517_info() {
     # shellcheck disable=SC2016
     sitenameclean=$(grep '$sitename =' "${joomlaconf}" | cut -d \' -f 2)
-    # shellcheck disable=SC2016
-    database=$(grep '$db =' "${joomlaconf}" | cut -d \' -f 2)
-    # shellcheck disable=SC2016
-    dbuser=$(grep '$user =' "${joomlaconf}" | cut -d \' -f 2)
-    # shellcheck disable=SC2016
-    password=$(grep '$password =' "${joomlaconf}" | cut -d \' -f 2)
-    # shellcheck disable=SC2016
-    host=$(grep '$host =' "${joomlaconf}" | cut -d \' -f 2)
-    # shellcheck disable=SC2016
-    prefix=$(grep '$dbprefix =' "${joomlaconf}" | cut -d \' -f 2)
     # shellcheck disable=SC2016
     versr=$(grep '$RELEASE' "${versionfile}" | cut -d \' -f 2)
     # shellcheck disable=SC2016
@@ -62,15 +43,6 @@ get_joomla25up_info() {
     # shellcheck disable=SC2016
     sitenameclean=$(grep '$sitename =' "${joomlaconf}" | cut -d \' -f 2)
     # shellcheck disable=SC2016
-    database=$(grep '$db =' "${joomlaconf}" | cut -d \' -f 2)
-    # shellcheck disable=SC2016
-    dbuser=$(grep '$user =' "${joomlaconf}" | cut -d \' -f 2)
-    # shellcheck disable=SC2016
-    password=$(grep '$password =' "${joomlaconf}" | cut -d \' -f 2)
-    # shellcheck disable=SC2016
-    host=$(grep '$host =' "${joomlaconf}" | cut -d \' -f 2)
-    # shellcheck disable=SC2016
-    prefix=$(grep '$dbprefix =' "${joomlaconf}" | cut -d \' -f 2)
     versr=$(grep 'RELEASE =' "${versionfile}" | cut -d \' -f 2)
     versd=$(grep 'DEV_LEVEL =' "${versionfile}" | cut -d \' -f 2)
     verss=$(grep 'DEV_STATUS =' "${versionfile}" | cut -d \' -f 2)
@@ -79,16 +51,6 @@ get_joomla25up_info() {
 get_joomla4up_info() {
     # shellcheck disable=SC2016
     sitenameclean=$(grep '$sitename =' "${joomlaconf}" | cut -d \' -f 2)
-    # shellcheck disable=SC2016
-    database=$(grep '$db =' "${joomlaconf}" | cut -d \' -f 2)
-    # shellcheck disable=SC2016
-    dbuser=$(grep '$user =' "${joomlaconf}" | cut -d \' -f 2)
-    # shellcheck disable=SC2016
-    password=$(grep '$password =' "${joomlaconf}" | cut -d \' -f 2)
-    # shellcheck disable=SC2016
-    host=$(grep '$host =' "${joomlaconf}" | cut -d \' -f 2)
-    # shellcheck disable=SC2016
-    prefix=$(grep '$dbprefix =' "${joomlaconf}" | cut -d \' -f 2)
     versr=$(grep 'MAJOR_VERSION =' "${versionfile}" | cut -d " " -f 9 | cut -d ";" -f 1)
     versd=$(grep 'MINOR_VERSION =' "${versionfile}" | cut -d " " -f 9 | cut -d ";" -f 1)
     verss=$(grep 'PATCH_VERSION =' "${versionfile}" | cut -d " " -f 9 | cut -d ";" -f 1)
