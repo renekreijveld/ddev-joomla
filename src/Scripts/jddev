@@ -97,6 +97,9 @@ echo -e "  on  Enables xdebug."
 echo -e "  off Disables xdebug"
 echo -e "  Without a parameter jxdb shows the xdebug status.\n"
 
+echo -e "jinfo -- Displays info about the Joomla project and shows DDEV description."
+echo -e "  Usage: jinfo\n"
+
 echo -e "jlistjoomlas -- List all Joomla sites found under the configured root folder."
 echo -e "  Usage: jlistjoomlas [-s] [-r <release>] [-h]"
 echo -e "  -s  Short, only display path and Joomla version (optional)."

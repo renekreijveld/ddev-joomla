@@ -1,0 +1,145 @@
+#!/bin/bash
+
+# jinfo -- Show info about the Joomla DDEV webite
+#
+# Written by René Kreijveld - email@renekreijveld.nl
+# This script is free software; you may redistribute it and/or modify it.
+# This script comes without any warranty. Use it at your own risk.
+#
+# Version history:
+# 1.0 Initial version
+
+VERSION=1.0
+
+# --- Joomla version detection ---
+
+joomlaconf="./configuration.php"
+versionf1017="./includes/version.php"
+versionf1516="./libraries/joomla/version.php"
+versionf2537="./libraries/cms/version/version.php"
+versionf38plus="./libraries/src/Version.php"
+version4="./includes/app.php"
+
+get_joomla10_info() {
+    # shellcheck disable=SC2016
+    sitenameclean=$(grep '$mosConfig_sitename =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
+    database=$(grep '$mosConfig_db =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
+    dbuser=$(grep '$mosConfig_user =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
+    password=$(grep '$mosConfig_password =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
+    host=$(grep '$mosConfig_host =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
+    prefix=$(grep '$mosConfig_dbprefix =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
+    versr=$(grep '$RELEASE =' "${versionfile}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
+    versd=$(grep '$DEV_LEVEL =' "${versionfile}" | cut -d \' -f 2)
+}
+
+get_joomla1517_info() {
+    # shellcheck disable=SC2016
+    sitenameclean=$(grep '$sitename =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
+    database=$(grep '$db =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
+    dbuser=$(grep '$user =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
+    password=$(grep '$password =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
+    host=$(grep '$host =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
+    prefix=$(grep '$dbprefix =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
+    versr=$(grep '$RELEASE' "${versionfile}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
+    versd=$(grep '$DEV_LEVEL' "${versionfile}" | cut -d \' -f 2)
+}
+
+get_joomla25up_info() {
+    # shellcheck disable=SC2016
+    sitenameclean=$(grep '$sitename =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
+    database=$(grep '$db =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
+    dbuser=$(grep '$user =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
+    password=$(grep '$password =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
+    host=$(grep '$host =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
+    prefix=$(grep '$dbprefix =' "${joomlaconf}" | cut -d \' -f 2)
+    versr=$(grep 'RELEASE =' "${versionfile}" | cut -d \' -f 2)
+    versd=$(grep 'DEV_LEVEL =' "${versionfile}" | cut -d \' -f 2)
+    verss=$(grep 'DEV_STATUS =' "${versionfile}" | cut -d \' -f 2)
+}
+
+get_joomla4up_info() {
+    # shellcheck disable=SC2016
+    sitenameclean=$(grep '$sitename =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
+    database=$(grep '$db =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
+    dbuser=$(grep '$user =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
+    password=$(grep '$password =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
+    host=$(grep '$host =' "${joomlaconf}" | cut -d \' -f 2)
+    # shellcheck disable=SC2016
+    prefix=$(grep '$dbprefix =' "${joomlaconf}" | cut -d \' -f 2)
+    versr=$(grep 'MAJOR_VERSION =' "${versionfile}" | cut -d " " -f 9 | cut -d ";" -f 1)
+    versd=$(grep 'MINOR_VERSION =' "${versionfile}" | cut -d " " -f 9 | cut -d ";" -f 1)
+    verss=$(grep 'PATCH_VERSION =' "${versionfile}" | cut -d " " -f 9 | cut -d ";" -f 1)
+}
+
+detect_joomla_version() {
+    versr="" versd="" verss="" jversion=""
+
+    if [[ -f "${versionf1017}" ]]; then
+        local release
+        # shellcheck disable=SC2016
+        release=$(grep '$RELEASE' "${versionf1017}" | cut -d \' -f 2)
+        if echo "${release}" | grep -q "1.0"; then
+            versionfile="${versionf1017}"; get_joomla10_info
+        elif echo "${release}" | grep -q "1.7"; then
+            versionfile="${versionf1017}"; get_joomla1517_info
+        fi
+    fi
+
+    if [[ -f "${versionf1516}" ]]; then
+        versionfile="${versionf1516}"; get_joomla1517_info
+    fi
+
+    if [[ -f "${versionf2537}" ]]; then
+        versionfile="${versionf2537}"; get_joomla25up_info
+    fi
+
+    if [[ -f "${versionf38plus}" ]]; then
+        if [[ -f "${version4}" ]]; then
+            versionfile="${versionf38plus}"; get_joomla4up_info
+        else
+            versionfile="${versionf38plus}"; get_joomla25up_info
+        fi
+    fi
+
+    if [[ -f "${version4}" ]]; then
+        jversion="${versr}.${versd}.${verss}"
+    else
+        jversion="${versr}.${versd}"
+    fi
+}
+
+# Check if .ddev directory exists
+if [ ! -f "configuration.php" ]; then
+    echo -e "Error: this directory is not a Joomla project, are you at the root of the website?\nUse the gosite command to go to the root of a project." >&2
+    exit 1
+fi
+
+detect_joomla_version
+
+echo -e "\nSitename       : ${sitenameclean}"
+echo -e "Joomla version : ${jversion}\n"
+
+ddev describe
