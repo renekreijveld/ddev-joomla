@@ -6,6 +6,8 @@ DDEV runs on macOS, Windows and Linux and on GitHub Codespaces.
 
 This set of scripts was written to better support Joomla local development in DDEV.
 
+These scripts also support the new ddev version 1.25.2 with joomla support, but they also work for older ddev versions.
+
 ### Features
 
 - Create a Joomla project and automatically download and install the latest Joomla version in it.
