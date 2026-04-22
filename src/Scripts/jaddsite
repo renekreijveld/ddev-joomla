@@ -13,8 +13,9 @@
 # 1.3 Added Adminer add-on installation before restarting DDEV
 # 1.4 ShellCheck fixes
 # 1.5 Delete initial mention of name and version
+# 1.6 Added ddev version check and use joomla support of available
 
-VERSION=1.5
+VERSION=1.6
 
 # Name of this script
 MYNAME=$(basename "${0}")
@@ -111,6 +112,15 @@ if ! command -v ddev &>/dev/null; then
     exit 1
 fi
 
+# Check ddev version — set DDEV_JOOMLA_SUPPORT=yes if >= 1.25.2, no otherwise
+DDEV_VERSION=$(ddev -v 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+# shellcheck disable=SC2034
+if printf '%s\n%s' "1.25.2" "${DDEV_VERSION}" | sort -V -C; then
+    DDEV_JOOMLA_SUPPORT="yes"
+else
+    DDEV_JOOMLA_SUPPORT="no"
+fi
+
 # Use command-line webserver if provided, otherwise use config default
 if [ -n "${WEBSERVER_OPTION}" ]; then
     WEBSERVER="${WEBSERVER_OPTION}"
@@ -180,18 +190,21 @@ fi
 
 # Create DDEV config
 showmessage "Creating DDEV config"
-ddev config --project-type=php --webserver-type="${WEBSERVER}"-fpm --docroot=. --php-version="${PHP_VERSION}" --upload-dirs=images >"${CMD_OUTPUT}" 2>&1
-
-# Add joomla.ini
-echo "display_errors = off" > "${SITE_FOLDER}/.ddev/php/joomla.ini"
-echo "output_buffering = off" >> "${SITE_FOLDER}/.ddev/php/joomla.ini"
+if [ "${DDEV_JOOMLA_SUPPORT}" == "yes" ]; then
+    ddev config --project-type=joomla --webserver-type="${WEBSERVER}"-fpm --docroot=. --php-version="${PHP_VERSION}" --upload-dirs=images >"${CMD_OUTPUT}" 2>&1
+else
+    ddev config --project-type=php --webserver-type="${WEBSERVER}"-fpm --docroot=. --php-version="${PHP_VERSION}" --upload-dirs=images >"${CMD_OUTPUT}" 2>&1
+    # Add joomla.ini
+    echo "display_errors = off" > "${SITE_FOLDER}/.ddev/php/joomla.ini"
+    echo "output_buffering = off" >> "${SITE_FOLDER}/.ddev/php/joomla.ini"
+fi
 
 # Start DDEV
 showmessage "Starting DDEV project"
 ddev start >"${CMD_OUTPUT}" 2>&1
 
 # Configure based on selected webserver
-if [[ "${WEBSERVER}" == "nginx" ]]; then
+if [[ "${WEBSERVER}" == "nginx" && "${DDEV_JOOMLA_SUPPORT}" == "no" ]]; then
     # Modify the nginx-site.conf
     NGINXCONF="${SITE_FOLDER}/.ddev/nginx_full/nginx-site.conf"
 
