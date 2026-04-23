@@ -241,7 +241,7 @@ fi
 
 # Run Joomla installer if needed
 if [ "${JOOMLA}" == "yes" ]; then
-    showmessage "Run Joomla installer"
+    showmessage "Running Joomla installer"
     DB_PREFIX=$(LC_ALL=C tr -dc '[:lower:]' < /dev/urandom | head -c 5)
     ddev php installation/joomla.php install --site-name="Joomla" --admin-user="Administrator" --admin-username=admin --admin-password=AdminAdmin1! --admin-email=admin@example.com --db-type=mysqli --db-encryption=0 --db-host=db --db-user=db --db-pass="db" --db-name=db --db-prefix="${DB_PREFIX}"_ --public-folder="" >"${CMD_OUTPUT}" 2>&1
     showmessage "Joomla config set sef_rewrite to true"
@@ -263,7 +263,7 @@ fi
 ddev describe >"${CMD_OUTPUT}" 2>&1
 echo -e "Launch your website with the command: ddev launch"
 if [ "${JOOMLA}" == "yes" ]; then
-    echo -e "Joomla was installed during setup:\n"
+    echo -e "\nJoomla was installed during setup:"
     echo -e "The website URL is https://${WEBSITE_NAME}.ddev.site"
     echo -e "Administrator URL is https://${WEBSITE_NAME}.ddev.site/administrator"
     echo -e "Admin username is admin"
