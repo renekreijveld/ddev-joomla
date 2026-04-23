@@ -14,8 +14,9 @@
 # 1.4 ShellCheck fixes
 # 1.5 Delete initial mention of name and version
 # 1.6 Added ddev version check and use joomla support of available
+# 1.7 Added -a option, to optionally add Adminer add-on to the project
 
-VERSION=1.6
+VERSION=1.7
 
 # Name of this script
 MYNAME=$(basename "${0}")
@@ -45,12 +46,13 @@ DEFAULT_WEBSERVER="${WEBSERVER:-nginx}"
 
 # display usage information
 usage() {
-    echo -e "${MYNAME} ${VERSION}, written by René Kreijveld. Add a new Joomla site to DDEV.\n"
-    echo -e "Usage: ${MYNAME} -n <sitename> [-p <php_version>] [-w <webserver>] [-j] [-v] [-s] [-h]\n"
+    echo -e "${MYNAME} ${VERSION}, written by René Kreijveld. Add a new Joomla project to DDEV.\n"
+    echo -e "Usage: ${MYNAME} -n <sitename> [-p <php_version>] [-w <webserver>] [-j] [-a] [-v] [-s] [-h]\n"
     echo "-n the website name for the new website (without spaces)."
     echo "-p the PHP version for the new website (optional, default: 8.4)."
     echo "-w the webserver to use, nginx or apache (optional, default: ${DEFAULT_WEBSERVER})."
     echo "-j download and install Joomla (optional)."
+    echo "-a add Adminer (MariaDB database management) to the project (optional)."
     echo "-v verbose, show all ddev output (optional)."
     echo "-s silent, no messages will be shown (optional)."
     echo -e "-h display this help (optional).\n"
@@ -70,9 +72,10 @@ contains_spaces() {
 SILENT="no"
 VERBOSE="no"
 JOOMLA="no"
+ADMINER="no"
 PHP_VERSION="8.4"
 WEBSERVER_OPTION=""
-while getopts "n:p:w:jvsh" opt; do
+while getopts "n:p:w:javsh" opt; do
     case ${opt} in
     n)
         WEBSITE_NAME=$OPTARG
@@ -85,6 +88,9 @@ while getopts "n:p:w:jvsh" opt; do
         ;;
     j)
         JOOMLA="yes"
+        ;;
+    a)
+        ADMINER="yes"
         ;;
     v)
         VERBOSE="yes"
@@ -149,7 +155,7 @@ if contains_spaces "${WEBSITE_NAME}"; then
     exit 1
 fi
 
-showmessage "Add new website ${WEBSITE_NAME} to DDEV."
+showmessage "Add new Joomla website project ${WEBSITE_NAME} to DDEV."
 
 # Set website root folder
 SITE_FOLDER=${ROOTFOLDER}/${WEBSITE_NAME}
@@ -194,10 +200,11 @@ if [ "${DDEV_JOOMLA_SUPPORT}" == "yes" ]; then
     ddev config --project-type=joomla --webserver-type="${WEBSERVER}"-fpm --docroot=. --php-version="${PHP_VERSION}" --upload-dirs=images >"${CMD_OUTPUT}" 2>&1
 else
     ddev config --project-type=php --webserver-type="${WEBSERVER}"-fpm --docroot=. --php-version="${PHP_VERSION}" --upload-dirs=images >"${CMD_OUTPUT}" 2>&1
-    # Add joomla.ini
-    echo "display_errors = off" > "${SITE_FOLDER}/.ddev/php/joomla.ini"
-    echo "output_buffering = off" >> "${SITE_FOLDER}/.ddev/php/joomla.ini"
 fi
+
+# Add joomla.ini
+echo "display_errors = off" > "${SITE_FOLDER}/.ddev/php/joomla.ini"
+echo "output_buffering = off" >> "${SITE_FOLDER}/.ddev/php/joomla.ini"
 
 # Start DDEV
 showmessage "Starting DDEV project"
@@ -223,12 +230,14 @@ if [[ "${WEBSERVER}" == "nginx" && "${DDEV_JOOMLA_SUPPORT}" == "no" ]]; then
     {print}' "${NGINXCONF}" > "${NGINXCONF}.tmp" && mv "${NGINXCONF}.tmp" "${NGINXCONF}"
 fi
 
-# Add Adminer to the project
-showmessage "Adding Adminer to the project"
-ddev add-on get ddev/ddev-adminer >"${CMD_OUTPUT}" 2>&1
+if [ "${ADMINER}" == "yes" ]; then
+    # Add Adminer to the project
+    showmessage "Adding Adminer to the project"
+    ddev add-on get ddev/ddev-adminer >"${CMD_OUTPUT}" 2>&1
 
-showmessage "Restarting DDEV project"
-ddev restart >"${CMD_OUTPUT}" 2>&1
+    showmessage "Restarting DDEV project"
+    ddev restart >"${CMD_OUTPUT}" 2>&1
+fi
 
 # Run Joomla installer if needed
 if [ "${JOOMLA}" == "yes" ]; then
@@ -249,13 +258,14 @@ if [ "${JOOMLA}" == "yes" ]; then
             cp "${SITE_FOLDER}/htaccess.txt" "${SITE_FOLDER}/.htaccess"
         fi
     fi
+fi
 
-    echo -e "Your Joomla website is ready.\n"
+ddev describe >"${CMD_OUTPUT}" 2>&1
+echo -e "Launch your website with the command: ddev launch"
+if [ "${JOOMLA}" == "yes" ]; then
+    echo -e "Joomla was installed during setup:\n"
     echo -e "The website URL is https://${WEBSITE_NAME}.ddev.site"
     echo -e "Administrator URL is https://${WEBSITE_NAME}.ddev.site/administrator"
     echo -e "Admin username is admin"
     echo -e "Admin password is AdminAdmin1!\n"
 fi
-
-ddev describe >"${CMD_OUTPUT}" 2>&1
-echo -e "Launch your website with the command: ddev launch"
