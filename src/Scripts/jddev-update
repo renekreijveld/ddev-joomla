@@ -9,8 +9,9 @@
 # Version history
 # 1.0 Initial version
 # 1.1 ShellCheck fixes
+# 1.2 Pass through arguments to the updater script
 
 # shellcheck disable=SC2034
-VERSION=1.1
+VERSION=1.2
 
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/renekreijveld/ddev-joomla/refs/heads/main/updater/ddev-joomla-updater.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/renekreijveld/ddev-joomla/refs/heads/main/updater/ddev-joomla-updater.sh)" -- "$@"

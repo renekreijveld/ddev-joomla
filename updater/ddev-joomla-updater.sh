@@ -81,6 +81,10 @@ start() {
     echo -e "This updater and the scripts it installs come without any warranty. Use at your own risk."
     echo -e "Always backup your data and software before running the updater and use the scripts it updates.\n"
 
+    if [[ "${FORCE}" == true ]]; then
+        echo -e "\nForce option used: all scripts will be updated to the latest version."
+    fi
+
     read -r -p "Do you want to continue? [Y/n] " CONFIRM
     if [[ "${CONFIRM}" =~ ^[nN]$ ]]; then
         echo "Update cancelled."
