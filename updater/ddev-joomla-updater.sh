@@ -13,8 +13,18 @@
 # 1.3 Removed backup of local scripts, added confirmation prompt at start
 # 1.4 Added jdbdumpall to updated scripts.
 # 1.6 ShellCheck fixes
+# 1.7 Added -f (force) option to update all scripts regardless of version
 
-VERSION=1.6
+VERSION=1.7
+
+# Parse arguments
+FORCE=false
+for arg in "$@"; do
+    case "$arg" in
+        -f) FORCE=true ;;
+        *)  echo "Unknown option: $arg"; echo "Usage: $0 [-f]"; exit 1 ;;
+    esac
+done
 
 # Folder where scripts are installed
 SCRIPTS_DEST="/usr/local/bin"
@@ -161,16 +171,19 @@ update_local_scripts() {
             LOCAL_VERSION="0"
         fi
 
-        # Skip if local version is already up-to-date
+        # Skip if local version is already up-to-date (unless force mode is active)
         if ! is_newer "${LOCAL_VERSION}" "${GITHUB_VERSION}"; then
-            echo "up-to-date (${LOCAL_VERSION})"
-            SKIPPED_SCRIPTS+=("${script}")
-            log_message "${script} is up-to-date (version ${LOCAL_VERSION})"
-            rm -f "${TMPDIR}/${script}"
-            continue
+            if [[ "${FORCE}" == false ]]; then
+                echo "up-to-date (${LOCAL_VERSION})"
+                SKIPPED_SCRIPTS+=("${script}")
+                log_message "${script} is up-to-date (version ${LOCAL_VERSION})"
+                rm -f "${TMPDIR}/${script}"
+                continue
+            fi
+            echo -n "forcing reinstall (${LOCAL_VERSION})... "
+        else
+            echo -n "updating ${LOCAL_VERSION} -> ${GITHUB_VERSION}... "
         fi
-
-        echo -n "updating ${LOCAL_VERSION} -> ${GITHUB_VERSION}... "
 
         # Move new script to destination
         if ! echo "${PASSWORD}" | sudo -S mv -f "${TMPDIR}/${script}" "${SCRIPTS_DEST}/${script}" 2>/dev/null; then
