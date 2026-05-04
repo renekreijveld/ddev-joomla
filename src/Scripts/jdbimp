@@ -15,8 +15,9 @@
 # 1.4 Added check if users starts jdbdump in a DDEV project directory
 # 1.5 Add project name to dump filename if not specified in config
 # 1.6 Delete initial mention of name and version
+# 1.7 Present numbered list of dump files when no -f is specified
 
-VERSION=1.6
+VERSION=1.7
 
 # Name of this script
 MYNAME=$(basename "$0")
@@ -32,7 +33,7 @@ showmessage() {
 usage() {
     echo -e "${MYNAME} ${VERSION}, written by René Kreijveld.\n"
     echo -e "Usage: ${MYNAME} [-f dumpfile] [-v] [-s] [-h]\n"
-    echo "-f dumpfile, use the specified file instead of db.sql or db.sql.gz (optional)."
+    echo "-f dumpfile, use the specified dump file (optional, shows a list if omitted)."
     echo "-v verbose, show all ddev output (optional)."
     echo "-s silent, no messages will be shown (optional)."
     echo -e "-h Help. Display this info.\n"
@@ -70,23 +71,31 @@ if [ ! -d ".ddev" ]; then
     exit 1
 fi
 
-WEBSITE_NAME=$(basename "$PWD")
-
-# If no custom dump file specified, auto-detect default dump file
+# If no custom dump file specified, present a numbered list of available dump files
 if [[ -z "${DUMPFILE}" ]]; then
-    IMPORTFILE="${WEBSITE_NAME}-db.sql"
-    IMPORTFILECOMPRESSED="${WEBSITE_NAME}-db.sql.gz"
-    if [[ -e "${IMPORTFILE}" && -e "${IMPORTFILECOMPRESSED}" ]]; then
-        echo "Error: Both ${IMPORTFILE} and ${IMPORTFILECOMPRESSED} exist. Please specify which file to import with -f."
-        exit 1
-    elif [[ -e "${IMPORTFILE}" ]]; then
-        DUMPFILE="${IMPORTFILE}"
-    elif [[ -e "${IMPORTFILECOMPRESSED}" ]]; then
-        DUMPFILE="${IMPORTFILECOMPRESSED}"
-    else
-        echo "Error: No database dump file found (${WEBSITE_NAME}-db.sql or ${WEBSITE_NAME}-db.sql.gz)."
+    DUMPFILES=()
+    while IFS= read -r file; do
+        DUMPFILES+=("$file")
+    done < <(find . -maxdepth 1 \( -name "*.sql" -o -name "*.sql.gz" \) | sed 's|^\./||' | sort)
+
+    if [[ ${#DUMPFILES[@]} -eq 0 ]]; then
+        echo "Error: No database dump files found (.sql or .sql.gz)."
         exit 1
     fi
+
+    echo "Available database dump files:"
+    for i in "${!DUMPFILES[@]}"; do
+        echo "$((i+1)). ${DUMPFILES[$i]}"
+    done
+    echo ""
+    read -r -p "Enter number of file to import: " CHOICE
+
+    if ! [[ "${CHOICE}" =~ ^[0-9]+$ ]] || [[ "${CHOICE}" -lt 1 ]] || [[ "${CHOICE}" -gt ${#DUMPFILES[@]} ]]; then
+        echo "Error: Invalid choice."
+        exit 1
+    fi
+
+    DUMPFILE="${DUMPFILES[$((CHOICE-1))]}"
 fi
 
 # Check if database dump exists
