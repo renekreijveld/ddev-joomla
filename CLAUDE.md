@@ -65,6 +65,7 @@ Each script sources this config at startup.
 | `jlatest` | Download and extract the latest (or specified) Joomla release |
 | `jdbdump` | Export the DDEV database (`ddev export-db`) |
 | `jdbdumpall` | Export the DDEV database of all Joomla projects to SQL dump files |
+| `jdbdumptable` | Export one table from the DDEV database to a SQL dump file |
 | `jdbimp` | Import a database dump (`ddev import-db`) |
 | `jbackup` | Full site backup: database dump + compressed archive (`.tgz` or `.zip`) |
 | `jbackupall` | Full backup of all DDEV Joomla projects (database dump + archive) |

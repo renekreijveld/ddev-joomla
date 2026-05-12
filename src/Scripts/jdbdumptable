@@ -1,0 +1,122 @@
+#!/bin/bash
+
+# jdbdumptable -- Dump one table from a Joomla database to a SQL file.
+# Supports Joomla versions running on DDEV
+#
+# Written by René Kreijveld - email@renekreijveld.nl
+# This script is free software; you may redistribute it and/or modify it.
+# This script comes without any warranty. Use it at your own risk.
+#
+# Version history:
+# 1.0 Initial version
+
+VERSION=1.0
+
+# Name of this script
+MYNAME=$(basename "$0")
+
+# Get DDEV Joomla configuration from ~/.config/ddevjoomla/config
+CONFIG_DIR="${HOME}/.config/ddevjoomla"
+CONFIG_FILE="${CONFIG_DIR}/config"
+
+# Load configuration file defaults
+if [[ -f "${CONFIG_FILE}" ]]; then
+    # shellcheck source=/dev/null
+    source "${CONFIG_FILE}"
+else
+    echo "Error: configuration file ${CONFIG_FILE} not found, exiting."
+    exit 1
+fi
+
+# Function to show messages (honoring silent mode)
+showmessage() {
+    if [[ "${SILENT}" == "no" ]]; then
+        echo -e "$1"
+    fi
+}
+
+# Display usage information
+usage() {
+    echo -e "${MYNAME} ${VERSION}, written by René Kreijveld.\n"
+    echo -e "Usage: ${MYNAME} -t <tablename> [-n] [-v] [-s] [-h]\n"
+    echo "-t tablename, dump the specified database table. Required."
+    echo "-n Do not compress the database dump with gzip (optional)."
+    echo "-v Verbose, show all ddev output (optional)."
+    echo "-s Silent, no messages will be shown (optional)."
+    echo -e "-h Help. Display this info.\n"
+    exit 0
+}
+
+# Process the arguments
+SILENT="no"
+TABLENAME=""
+COMPRESS="yes"
+VERBOSE="no"
+while getopts "t:nvsh" opt; do
+    case "${opt}" in
+    t)
+        TABLENAME="${OPTARG}"
+        ;;
+    n)
+        COMPRESS="no"
+        ;;
+    v)
+        VERBOSE="yes"
+        ;;
+    s)
+        SILENT="yes"
+        ;;
+    h)
+        usage
+        ;;
+    \?)
+        echo "Invalid option: -$OPTARG" >&2
+        exit 1
+        ;;
+    esac
+done
+
+# Table name is required
+if [[ -z "${TABLENAME}" ]]; then
+    echo "Error: table name is required. Use -t <tablename>." >&2
+    exit 1
+fi
+
+# Check if .ddev directory exists
+if [ ! -d ".ddev" ]; then
+    echo "Error: this directory is not a DDEV project, are you at the root of the website?" >&2
+    exit 1
+fi
+
+# Determine output filename
+if [[ "${COMPRESS}" == "yes" ]]; then
+    OUTFILE="${TABLENAME}.sql.gz"
+else
+    OUTFILE="${TABLENAME}.sql"
+fi
+
+showmessage "Starting database table dump of table ${TABLENAME}."
+
+# Run the database dump; capture stdout to temp file, handle stderr based on verbose mode
+if [ "${VERBOSE}" == "yes" ]; then
+    if ! ddev exec mariadb-dump --host=db --user=db --password=db db "${TABLENAME}" > "${TABLENAME}.sql"; then
+        echo "Error: database table dump failed." >&2
+        exit 1
+    fi
+else
+    if ! ddev exec -q mariadb-dump --host=db --user=db --password=db db "${TABLENAME}" > "${TABLENAME}.sql" 2>/dev/null; then
+        echo "Error: database table dump failed." >&2
+        exit 1
+    fi
+fi
+
+# Compress or move to the final output file
+if [[ "${COMPRESS}" == "yes" ]]; then
+    if ! gzip "${TABLENAME}.sql"; then
+        echo "Error: gzip compression failed." >&2
+        rm -f "${TABLENAME}.sql"
+        exit 1
+    fi
+fi
+
+showmessage "Database table dump of table ${TABLENAME} is ready in ${OUTFILE}."

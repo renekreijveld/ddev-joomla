@@ -14,8 +14,9 @@
 # 1.4 Updated jdbimp default filename description to reflect project-name prefix.
 # 1.5 Added jdbdumpall description.
 # 1.6 Added jxdb description.
+# 1.7 Added jdbdumptable description.
 
-VERSION=1.6
+VERSION=1.7
 
 # Name of this script
 MYNAME=$(basename "$0")
@@ -62,6 +63,14 @@ echo -e "  -h  Display help.\n"
 
 echo -e "jdbdumpall -- Export the DDEV database of all Joomla projects to SQL dump files."
 echo -e "  Usage: jdbdumpall [-n] [-v] [-s] [-h]"
+echo -e "  -n  Do not compress the dump with gzip (optional)."
+echo -e "  -v  Verbose, show all ddev output (optional)."
+echo -e "  -s  Silent, no messages will be shown (optional)."
+echo -e "  -h  Display help.\n"
+
+echo -e "jdbdumptable -- Export one table from the DDEV database to a SQL dump file."
+echo -e "  Usage: jdbdumptable -t <tablename> [-n] [-v] [-s] [-h]"
+echo -e "  -t  The table to dump. Required."
 echo -e "  -n  Do not compress the dump with gzip (optional)."
 echo -e "  -v  Verbose, show all ddev output (optional)."
 echo -e "  -s  Silent, no messages will be shown (optional)."
