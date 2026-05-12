@@ -1,0 +1,231 @@
+#!/bin/bash
+
+# jclone -- Clone an existing DDEV Joomla project to a new project name.
+# Run this from inside the source project's root folder.
+#
+# Written by René Kreijveld - email@renekreijveld.nl
+# This script is free software; you may redistribute it and/or modify it.
+# This script comes without any warranty. Use it at your own risk.
+#
+# Version history
+# 1.0 Initial version
+
+VERSION=1.0
+
+# Name of this script
+MYNAME=$(basename "$0")
+
+# Get DDEV Joomla configuration from ~/.config/ddevjoomla/config
+CONFIG_DIR="${HOME}/.config/ddevjoomla"
+CONFIG_FILE="${CONFIG_DIR}/config"
+
+# Load configuration file defaults
+if [[ -f "${CONFIG_FILE}" ]]; then
+    # shellcheck source=/dev/null
+    source "${CONFIG_FILE}"
+else
+    echo "Error: configuration file ${CONFIG_FILE} not found, exiting."
+    exit 1
+fi
+
+# show message function
+showmessage() {
+    if [ "${SILENT}" == "no" ]; then
+        echo -e "$1"
+    fi
+}
+
+usage() {
+    echo -e "${MYNAME} ${VERSION}, written by René Kreijveld. Clone an existing DDEV Joomla project to a new project name."
+    echo -e "Run this from inside the source project's root folder.\n"
+    echo -e "Usage: ${MYNAME} -n <new_name> [-v] [-s] [-h]\n"
+    echo "-n the name for the cloned project (without spaces). Required."
+    echo "-v verbose, show all ddev output (optional)."
+    echo "-s silent, no messages will be shown (optional)."
+    echo -e "-h display this help (optional).\n"
+    exit 0
+}
+
+NEW_NAME=""
+SILENT="no"
+VERBOSE="no"
+while getopts "n:vsh" opt; do
+    case "${opt}" in
+    n)
+        NEW_NAME=$OPTARG
+        ;;
+    v)
+        VERBOSE="yes"
+        ;;
+    s)
+        SILENT="yes"
+        ;;
+    h)
+        usage
+        ;;
+    \?)
+        echo "Invalid option: -$OPTARG" >&2
+        usage
+        ;;
+    :)
+        echo "Option -$OPTARG requires an argument." >&2
+        usage
+        ;;
+    esac
+done
+
+# Check if ddev is installed
+if ! command -v ddev &>/dev/null; then
+    echo "Error: ddev is not installed or not in PATH, exiting."
+    exit 1
+fi
+
+# Check mandatory parameter
+if [ -z "${NEW_NAME}" ]; then
+    echo "Error: new project name missing."
+    echo "Use ${MYNAME} -h to display help."
+    exit 1
+fi
+
+# Check for spaces in the new name
+if [[ "${NEW_NAME}" =~ \  ]]; then
+    echo "Error: project name '${NEW_NAME}' contains spaces."
+    exit 1
+fi
+
+# Must run from a DDEV project root
+if [ ! -d ".ddev" ]; then
+    echo "Error: this directory is not a DDEV project, are you at the root of the source website?" >&2
+    exit 1
+fi
+
+SOURCE_FOLDER="$PWD"
+SOURCE_NAME=$(basename "${SOURCE_FOLDER}")
+# shellcheck disable=SC2153
+TARGET_FOLDER="${ROOTFOLDER}/${NEW_NAME}"
+
+if [ "${SOURCE_NAME}" == "${NEW_NAME}" ]; then
+    echo "Error: new project name '${NEW_NAME}' is the same as the source. Cannot clone over itself."
+    exit 1
+fi
+
+if [ -e "${TARGET_FOLDER}" ]; then
+    echo "Error: target folder ${TARGET_FOLDER} already exists, exiting."
+    exit 1
+fi
+
+# Read source PHP version and webserver from .ddev/config.yaml
+SOURCE_PHP=$(awk -F': *' '/^php_version:/ {gsub(/"/, "", $2); print $2}' .ddev/config.yaml 2>/dev/null)
+SOURCE_WEBSERVER=$(awk -F': *' '/^webserver_type:/ {gsub(/"/, "", $2); print $2}' .ddev/config.yaml 2>/dev/null)
+# Strip -fpm suffix to get nginx or apache
+SOURCE_WEBSERVER="${SOURCE_WEBSERVER%-fpm}"
+
+if [ -z "${SOURCE_PHP}" ]; then
+    echo "Warning: could not detect source PHP version, defaulting to 8.4."
+    SOURCE_PHP="8.4"
+fi
+if [ -z "${SOURCE_WEBSERVER}" ]; then
+    echo "Warning: could not detect source webserver, defaulting to nginx."
+    SOURCE_WEBSERVER="nginx"
+fi
+
+# Check ddev version — set DDEV_JOOMLA_SUPPORT=yes if >= 1.25.2, no otherwise
+DDEV_VERSION=$(ddev -v 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+if printf '%s\n%s' "1.25.2" "${DDEV_VERSION}" | sort -V -C; then
+    DDEV_JOOMLA_SUPPORT="yes"
+else
+    DDEV_JOOMLA_SUPPORT="no"
+fi
+
+echo -e "Clone '${SOURCE_NAME}' to '${NEW_NAME}' at ${TARGET_FOLDER}."
+echo -e "Using PHP ${SOURCE_PHP} and ${SOURCE_WEBSERVER}."
+read -r -p "Do you want to continue? [Y/n] " CONFIRM
+if [[ ! "${CONFIRM}" =~ ^[Yy]?$ ]]; then
+    echo "Aborted."
+    exit 0
+fi
+
+# Redirect ddev output based on -v flag
+if [ "${VERBOSE}" == "yes" ]; then
+    CMD_OUTPUT=/dev/stdout
+else
+    CMD_OUTPUT=/dev/null
+fi
+
+# Dump source DB to a temp file
+DUMPFILE=$(mktemp -t jclone.XXXXXX).sql.gz
+showmessage "Dumping source database."
+if ! ddev export-db --file="${DUMPFILE}" >"${CMD_OUTPUT}" 2>&1; then
+    echo "Error: source database dump failed, exiting."
+    rm -f "${DUMPFILE}"
+    exit 1
+fi
+
+# Copy source files to target, excluding .ddev (will be recreated)
+showmessage "Copying source files to ${TARGET_FOLDER}."
+mkdir -p "${TARGET_FOLDER}"
+if ! rsync -a --exclude='.ddev' "${SOURCE_FOLDER}/" "${TARGET_FOLDER}/"; then
+    echo "Error: file copy failed, exiting."
+    rm -rf "${TARGET_FOLDER}"
+    rm -f "${DUMPFILE}"
+    exit 1
+fi
+
+cd "${TARGET_FOLDER}" || { rm -f "${DUMPFILE}"; exit 1; }
+
+# Create fresh DDEV config for the clone (project name inferred from directory name)
+showmessage "Creating DDEV config for ${NEW_NAME}."
+if [ "${DDEV_JOOMLA_SUPPORT}" == "yes" ]; then
+    ddev config --project-type=joomla --webserver-type="${SOURCE_WEBSERVER}"-fpm --docroot=. --php-version="${SOURCE_PHP}" --upload-dirs=images >"${CMD_OUTPUT}" 2>&1
+else
+    ddev config --project-type=php --webserver-type="${SOURCE_WEBSERVER}"-fpm --docroot=. --php-version="${SOURCE_PHP}" --upload-dirs=images >"${CMD_OUTPUT}" 2>&1
+fi
+
+# Add joomla.ini override
+mkdir -p "${TARGET_FOLDER}/.ddev/php"
+echo "display_errors = off" > "${TARGET_FOLDER}/.ddev/php/joomla.ini"
+echo "output_buffering = off" >> "${TARGET_FOLDER}/.ddev/php/joomla.ini"
+
+# Apply Joomla API nginx tweak if needed
+if [[ "${SOURCE_WEBSERVER}" == "nginx" && "${DDEV_JOOMLA_SUPPORT}" == "no" ]]; then
+    NGINXCONF="${TARGET_FOLDER}/.ddev/nginx_full/nginx-site.conf"
+    if [ -f "${NGINXCONF}" ]; then
+        sed -i.bak '/^#ddev-generated/d' "${NGINXCONF}"
+        rm -f "${NGINXCONF}.bak"
+        awk '/location @rewrite \{/{
+            print "    # Support for Joomla API"
+            print "    location /api/ {"
+            print "        try_files $uri $uri/ /api/index.php?$args;"
+            print "    }"
+            print ""
+        }
+        {print}' "${NGINXCONF}" > "${NGINXCONF}.tmp" && mv "${NGINXCONF}.tmp" "${NGINXCONF}"
+    fi
+fi
+
+# Start the cloned DDEV project
+showmessage "Starting cloned DDEV project."
+if ! ddev start >"${CMD_OUTPUT}" 2>&1; then
+    echo "Error: ddev start failed, exiting."
+    rm -f "${DUMPFILE}"
+    exit 1
+fi
+
+# Import the dump into the cloned project's DB
+showmessage "Importing database into cloned project."
+if ! ddev import-db --file="${DUMPFILE}" >"${CMD_OUTPUT}" 2>&1; then
+    echo "Error: database import failed, exiting."
+    rm -f "${DUMPFILE}"
+    exit 1
+fi
+
+# Clear Joomla cache and tmp folders so the clone starts fresh
+showmessage "Clearing Joomla cache and tmp."
+rm -rf "${TARGET_FOLDER:?}/cache/"* "${TARGET_FOLDER:?}/administrator/cache/"* "${TARGET_FOLDER:?}/tmp/"* 2>/dev/null
+
+rm -f "${DUMPFILE}"
+
+showmessage "\nClone complete. New project: ${NEW_NAME}"
+showmessage "URL: https://${NEW_NAME}.ddev.site"
+showmessage "Administrator URL: https://${NEW_NAME}.ddev.site/administrator"
+showmessage "\nNote: if the source site had its hostname hardcoded anywhere (articles, custom modules, \$live_site, etc.), you may need to update those references manually."

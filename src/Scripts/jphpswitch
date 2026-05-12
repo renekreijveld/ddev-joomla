@@ -1,0 +1,136 @@
+#!/bin/bash
+
+# jphpswitch -- Switch the PHP version of an existing DDEV Joomla project.
+#
+# Written by René Kreijveld - email@renekreijveld.nl
+# This script is free software; you may redistribute it and/or modify it.
+# This script comes without any warranty. Use it at your own risk.
+#
+# Version history
+# 1.0 Initial version
+
+VERSION=1.0
+
+# Name of this script
+MYNAME=$(basename "$0")
+
+# Get DDEV Joomla configuration from ~/.config/ddevjoomla/config
+CONFIG_DIR="${HOME}/.config/ddevjoomla"
+CONFIG_FILE="${CONFIG_DIR}/config"
+
+# Load configuration file defaults
+if [[ -f "${CONFIG_FILE}" ]]; then
+    # shellcheck source=/dev/null
+    source "${CONFIG_FILE}"
+else
+    echo "Error: configuration file ${CONFIG_FILE} not found, exiting."
+    exit 1
+fi
+
+# show message function
+showmessage() {
+    if [ "${SILENT}" == "no" ]; then
+        echo -e "$1"
+    fi
+}
+
+usage() {
+    echo -e "${MYNAME} ${VERSION}, written by René Kreijveld. Switch the PHP version of an existing DDEV Joomla project.\n"
+    echo -e "Usage: ${MYNAME} -p <php_version> [-v] [-s] [-h]\n"
+    echo "-p the new PHP version (e.g. 8.2, 8.3, 8.4). Required."
+    echo "-v verbose, show all ddev output (optional)."
+    echo "-s silent, no messages will be shown (optional)."
+    echo -e "-h display this help (optional).\n"
+    exit 0
+}
+
+PHP_VERSION=""
+SILENT="no"
+VERBOSE="no"
+while getopts "p:vsh" opt; do
+    case "${opt}" in
+    p)
+        PHP_VERSION=$OPTARG
+        ;;
+    v)
+        VERBOSE="yes"
+        ;;
+    s)
+        SILENT="yes"
+        ;;
+    h)
+        usage
+        ;;
+    \?)
+        echo "Invalid option: -$OPTARG" >&2
+        usage
+        ;;
+    :)
+        echo "Option -$OPTARG requires an argument." >&2
+        usage
+        ;;
+    esac
+done
+
+# Check if ddev is installed
+if ! command -v ddev &>/dev/null; then
+    echo "Error: ddev is not installed or not in PATH, exiting."
+    exit 1
+fi
+
+# Check mandatory parameter
+if [ -z "${PHP_VERSION}" ]; then
+    echo "Error: PHP version missing."
+    echo "Use ${MYNAME} -h to display help."
+    exit 1
+fi
+
+# Validate PHP version format (e.g. 8.2, 8.3, 8.4)
+if [[ ! "${PHP_VERSION}" =~ ^[0-9]+\.[0-9]+$ ]]; then
+    echo "Error: invalid PHP version '${PHP_VERSION}'. Expected format like 8.3 or 8.4."
+    exit 1
+fi
+
+# Must run from a DDEV project root
+if [ ! -d ".ddev" ]; then
+    echo "Error: this directory is not a DDEV project, are you at the root of the website?" >&2
+    exit 1
+fi
+
+WEBSITE_NAME=$(basename "$PWD")
+
+# Read current PHP version from .ddev/config.yaml
+CURRENT_PHP=$(awk -F': *' '/^php_version:/ {gsub(/"/, "", $2); print $2}' .ddev/config.yaml 2>/dev/null)
+
+if [ -n "${CURRENT_PHP}" ] && [ "${CURRENT_PHP}" == "${PHP_VERSION}" ]; then
+    showmessage "Project ${WEBSITE_NAME} is already on PHP ${PHP_VERSION}, nothing to do."
+    exit 0
+fi
+
+showmessage "Switching ${WEBSITE_NAME} from PHP ${CURRENT_PHP:-unknown} to PHP ${PHP_VERSION}."
+read -r -p "Do you want to continue? [Y/n] " CONFIRM
+if [[ ! "${CONFIRM}" =~ ^[Yy]?$ ]]; then
+    echo "Aborted."
+    exit 0
+fi
+
+# Redirect ddev output based on -v flag
+if [ "${VERBOSE}" == "yes" ]; then
+    CMD_OUTPUT=/dev/stdout
+else
+    CMD_OUTPUT=/dev/null
+fi
+
+showmessage "Updating DDEV config."
+if ! ddev config --php-version="${PHP_VERSION}" >"${CMD_OUTPUT}" 2>&1; then
+    echo "Error: ddev config failed, exiting."
+    exit 1
+fi
+
+showmessage "Restarting DDEV project."
+if ! ddev restart >"${CMD_OUTPUT}" 2>&1; then
+    echo "Error: ddev restart failed, exiting."
+    exit 1
+fi
+
+showmessage "Project ${WEBSITE_NAME} is now running PHP ${PHP_VERSION}."

@@ -15,8 +15,9 @@
 # 1.5 Added jdbdumpall description.
 # 1.6 Added jxdb description.
 # 1.7 Added jdbdumptable description.
+# 1.8 Added jclone and jphpswitch descriptions.
 
-VERSION=1.7
+VERSION=1.8
 
 # Name of this script
 MYNAME=$(basename "$0")
@@ -41,6 +42,21 @@ echo -e "jdelsite -- Permanently delete a DDEV Joomla website and its files."
 echo -e "  Usage: jdelsite -n <name> [-v] [-s] [-h]"
 echo -e "  -n  The name of the website to delete. Required."
 echo -e "  -v  Verbose, show all ddev and docker output (optional)."
+echo -e "  -s  Silent, no messages will be shown (optional)."
+echo -e "  -h  Display help.\n"
+
+echo -e "jclone -- Clone an existing DDEV Joomla project to a new project name."
+echo -e "  Run this from inside the source project's root folder."
+echo -e "  Usage: jclone -n <new_name> [-v] [-s] [-h]"
+echo -e "  -n  The name for the cloned project (without spaces). Required."
+echo -e "  -v  Verbose, show all ddev output (optional)."
+echo -e "  -s  Silent, no messages will be shown (optional)."
+echo -e "  -h  Display help.\n"
+
+echo -e "jphpswitch -- Switch the PHP version of an existing DDEV Joomla project."
+echo -e "  Usage: jphpswitch -p <php_version> [-v] [-s] [-h]"
+echo -e "  -p  The new PHP version (e.g. 8.2, 8.3, 8.4). Required."
+echo -e "  -v  Verbose, show all ddev output (optional)."
 echo -e "  -s  Silent, no messages will be shown (optional)."
 echo -e "  -h  Display help.\n"
 

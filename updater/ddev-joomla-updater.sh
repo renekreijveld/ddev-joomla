@@ -14,8 +14,9 @@
 # 1.4 Added jdbdumpall to updated scripts.
 # 1.6 ShellCheck fixes
 # 1.7 Added -f (force) option to update all scripts regardless of version
+# 1.8 Added jclone and jphpswitch to updated scripts.
 
-VERSION=1.7
+VERSION=1.8
 
 # Parse arguments
 FORCE=false
@@ -33,7 +34,7 @@ LOGFILE="${CONFIG_DIR}/ddev-joomla-update.log"
 CONFIG_FILE="${CONFIG_DIR}/config"
 
 # Local scripts to install
-LOCAL_SCRIPTS=( "jaddsite" "jdelsite" "jdbdump" "jdbdumpall" "jdbdumptable" "jbackup" "jbackupall" "jdbimp" "jddev" "jddev-update" "jlatest" "jlistjoomlas" "gosite" "jxdb" "jinfo" )
+LOCAL_SCRIPTS=( "jaddsite" "jdelsite" "jclone" "jphpswitch" "jdbdump" "jdbdumpall" "jdbdumptable" "jbackup" "jbackupall" "jdbimp" "jddev" "jddev-update" "jlatest" "jlistjoomlas" "gosite" "jxdb" "jinfo" )
 
 # GitHub Repo Base URL
 GITHUB_BASE="https://raw.githubusercontent.com/renekreijveld/ddev-joomla/refs/heads/main"

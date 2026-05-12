@@ -12,8 +12,9 @@
 # 1.2 Added jdbdumpall to installed scripts.
 # 1.3 Updated folder paths for backups
 # 1.5 ShellCheck fixes
+# 1.6 Added jclone and jphpswitch to installed scripts.
 
-VERSION=1.5
+VERSION=1.6
 
 # Folder where scripts are installed
 SCRIPTS_DEST="/usr/local/bin"
@@ -22,7 +23,7 @@ LOGFILE="${CONFIG_DIR}/ddev-joomla-install.log"
 CONFIG_FILE="${CONFIG_DIR}/config"
 
 # Local scripts to install
-LOCAL_SCRIPTS=( "jaddsite" "jdelsite" "jdbdump" "jdbdumpall" "jdbdumptable" "jbackup" "jbackupall" "jdbimp" "jddev" "jddev-update" "jlatest" "jlistjoomlas" "gosite" "jxdb" "jinfo")
+LOCAL_SCRIPTS=( "jaddsite" "jdelsite" "jclone" "jphpswitch" "jdbdump" "jdbdumpall" "jdbdumptable" "jbackup" "jbackupall" "jdbimp" "jddev" "jddev-update" "jlatest" "jlistjoomlas" "gosite" "jxdb" "jinfo")
 
 # GitHub Repo Base URL
 GITHUB_BASE="https://raw.githubusercontent.com/renekreijveld/ddev-joomla/refs/heads/main"

@@ -62,6 +62,8 @@ Each script sources this config at startup.
 
 | `jaddsite` | Create a new DDEV Joomla project (PHP version, webserver, optional Joomla install) |
 | `jdelsite` | Permanently delete a DDEV Joomla project and its files |
+| `jclone` | Clone an existing DDEV Joomla project to a new project name |
+| `jphpswitch` | Switch the PHP version of an existing DDEV Joomla project |
 | `jlatest` | Download and extract the latest (or specified) Joomla release |
 | `jdbdump` | Export the DDEV database (`ddev export-db`) |
 | `jdbdumpall` | Export the DDEV database of all Joomla projects to SQL dump files |
