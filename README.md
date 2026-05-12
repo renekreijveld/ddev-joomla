@@ -29,7 +29,7 @@ The following scripts will be installed which do the following:
 |-----------------|---------|
 | `jaddsite`      | Create a new DDEV Joomla project (PHP version, webserver, optional Joomla install) |
 | `jdelsite`      | Permanently delete a DDEV Joomla project and its files |
-| `jclone`        | Clone an existing DDEV Joomla project to a new project name |
+| `jclone`        | Clone an existing DDEV Joomla project (including the database) to a new project name |
 | `jphpswitch`    | Switch the PHP version of an existing DDEV Joomla project |
 | `jlatest`       | Download and extract the latest (or specified) Joomla release |
 | `jdbdump`       | Export the DDEV database (`ddev export-db`) |
