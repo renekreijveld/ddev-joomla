@@ -1,8 +1,8 @@
 # Bash scripts to support Joomla in DDEV
 
-> **⚠️ This project has moved to a new location!**
-> This repository is no longer maintained on Github. The new location for this repository is:
-> **[https://code.kreijveld.com/jouw-gebruiker/jouw-repo](https://code.kreijveld.com/renekreijveld/ddev-joomla)**
+## **⚠️ This project has moved to a new location!**
+## This repository is no longer maintained on Github. The new location for this repository is:
+## **[https://code.kreijveld.com/renekreijveld/ddev-joomla](https://code.kreijveld.com/renekreijveld/ddev-joomla)**
 
 DDEV is a tool to create Docker-based PHP development environments. It gives you Container superpowers with zero required Docker skills: environments in minutes, multiple concurrent projects, and less time to deployment.
 
