@@ -1,5 +1,9 @@
 # Bash scripts to support Joomla in DDEV
 
+> **⚠️ This project has moved to a new location!**
+> This repository is no longer maintained on Github. The new location for this repository is:
+> **[https://code.kreijveld.com/jouw-gebruiker/jouw-repo](https://code.kreijveld.com/renekreijveld/ddev-joomla)**
+
 DDEV is a tool to create Docker-based PHP development environments. It gives you Container superpowers with zero required Docker skills: environments in minutes, multiple concurrent projects, and less time to deployment.
 
 DDEV runs on macOS, Windows and Linux and on GitHub Codespaces.
@@ -53,14 +57,10 @@ The installer script automatically creates backups of all configuration files an
 
 ### Installation & Updates
 
-Follow these <a href="../../blob/main/Install.md">installation instructions</a> to get everything up and running.
+Follow these <a href="https://code.kreijveld.com/renekreijveld/ddev-joomla/src/branch/main/Install.md">installation instructions</a> to get everything up and running.
 
 Regular updates are provided in this repository. Use the local `jddev-update` command to update your local jddev scripts.
 
 ### Documentation
 
-Documentation can be found in the [Wiki pages](https://github.com/renekreijveld/ddev-joomla/wiki).
-
-### Support the Project
-
-If you like and use this tool, please consider <a href="https://renekreijveld.nl/donate" target="_blank">making a donation</a> to support further development. 🙌
+Documentation can be found in the [Wiki pages](https://code.kreijveld.com/renekreijveld/ddev-joomla/wiki).
